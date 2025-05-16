@@ -1,9 +1,12 @@
-import React from 'react'
+import React from 'react';
+import MainTransactions from "../Components/Transitions/MainComponent";
 
 function Transactions() {
   return (
-    <div>Transactions</div>
-  )
+    <div>
+      <MainTransactions />
+    </div>
+  );
 }
 
-export default Transactions
+export default Transactions;

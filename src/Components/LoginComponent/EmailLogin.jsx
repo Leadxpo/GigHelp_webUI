@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Typography, Box, Grid, Paper, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";  // <-- make sure axios is installed
 import LoginImage from "../../Images/laginpageImage.jpg";
 import Logo from "../../Images/logo.jpg";
 
@@ -9,18 +10,41 @@ const EmailLoginPage = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    // Check for valid credentials (You can replace this with API call)
-    if (email === "admin@gmail.com" && password === "123456") {
-      localStorage.setItem("token", "userToken"); // Storing token
-      navigate("/dashboard/home"); // Redirect to Layout Page
-    } else {
-      alert("Invalid Credentials!");
+  const handleLogin = async () => {
+    try {
+      // 1. Call the login API
+      const response = await axios.post("http://localhost:3001/user/login", {
+        email,
+        password,
+      });
+
+      const { token } = response.data.data; // token from the response
+      const { user } = response.data.data;  // user details from the response
+
+console.log("111111111 token>",token)
+console.log("111111111 user Data>",user)
+
+
+      if (token) {
+        // 2. Save token to localStorage
+        localStorage.setItem("token", token);
+
+        // 3. Save user data to localStorage
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // 4. Navigate to dashboard
+        navigate("/dashboard/home");
+      } else {
+        alert("Login failed, please try again.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(error.response?.data?.message || "Invalid Credentials!");
     }
   };
 
   return (
-    <Grid container component="main" sx={{ height: "100vh" }}>
+    <Grid container component="main" sx={{ height: "100vh", boxShadow: "none" }}>
       <Grid item xs={12} sm={8} md={6} component={Paper} elevation={0} square>
         <Box
           sx={{
@@ -29,7 +53,7 @@ const EmailLoginPage = () => {
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            boxShadow: "none", // Remove box shadow
+            boxShadow: "none",
           }}
         >
           <img
@@ -74,13 +98,19 @@ const EmailLoginPage = () => {
           </Button>
 
           <Typography variant="body2" sx={{ textAlign: "center", mt: 6 }}>
-            Create New Account?{" "}
-            <span style={{ color: "#007bff", cursor: "pointer" }}>Sign up</span>
-          </Typography>
+  Create New Account?{" "}
+  <span
+    style={{ color: "#007bff", cursor: "pointer" }}
+    onClick={() => navigate("/register-form")}
+  >
+    Sign up
+  </span>
+</Typography>
+
         </Box>
       </Grid>
 
-      <Grid item xs={false} sm={4} md={6} sx={{ py: 2 }}>
+      <Grid item xs={false} sm={4} md={6} sx={{ py: 2 ,mt:3}}>
         <div
           style={{
             backgroundImage: `url(${LoginImage})`,

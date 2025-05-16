@@ -37,9 +37,9 @@ const OtpSendpage = () => {
   };
 
   return (
-    <Grid container component="main" sx={{ height: "100vh" }}>
+    <Grid container component="main" sx={{ height: "100vh", boxShadow: "none" }}>
       {/* Left Side - OTP Form */}
-      <Grid item xs={12} sm={8} md={6} component={Paper} elevation={6} square>
+      <Grid item xs={12} sm={8} md={6} component={Paper} elevation={0} square>
         <Box
           sx={{
             my: 8,
@@ -109,7 +109,7 @@ const OtpSendpage = () => {
       </Grid>
 
       {/* Right Side - Background Image */}
-      <Grid item xs={false} sm={4} md={6} sx={{ p: 0 }}>
+      <Grid item xs={false} sm={4} md={6} sx={{ p: 2,mt:3 }}>
         <div
           style={{
             backgroundImage: `url(${LoginImage})`,

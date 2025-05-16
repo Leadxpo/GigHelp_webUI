@@ -5,6 +5,7 @@ import { useState } from "react";
 import EmailLogin from "./Components/LoginComponent/EmailLogin";
 import PhoneLogin from "./Components/LoginComponent/PhoneLogin";
 import OTPLogin from "./Components/LoginComponent/otpSend";
+import RegisterForm from "./Components/LoginComponent/RegisterForm";
 import LoginPage from "./Pages/Login";
 import HomePage from "./Pages/Homepage";
 import AddTask from "./Pages/Addtaskpage";
@@ -13,11 +14,13 @@ import MyTasks from "./Pages/Mytaskspage";
 import MyBids from "./Pages/MyBids";
 import Fillters from "./Pages/Fillters";
 import Profile from "./Pages/Profile";
-import AppSettings from "./Pages/AppSettings";
+import AppSettings from "./Pages/settings";
 import Transactions from "./Pages/Transactions";
 import HelpSupport from "./Pages/help&support";
 import Layout from "./Pages/Layout";
 import Logout from "./Pages/Logout";
+import Notification from "./Pages/Notification";
+
 
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem("token");
@@ -45,6 +48,8 @@ function App() {
         <Route path="/email-login" element={<EmailLogin />} />
         <Route path="/phone-login" element={<PhoneLogin />} />
         <Route path="/otp-login" element={<OTPLogin />} />
+        <Route path="/register-form" element={<RegisterForm />} />
+
 
         {/* Protected Routes */}
         <Route
@@ -63,6 +68,7 @@ function App() {
           <Route path="my-bids" element={<MyBids />} />
           <Route path="filters" element={<Fillters />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="notification" element={<Notification />} />
           <Route path="app-settings" element={<AppSettings />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="help-support" element={<HelpSupport />} />

@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Button, Typography, Box, Grid, Paper, TextField } from "@mui/material";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import LoginImage from "../../Images/laginpageImage.jpg";
 import Logo from "../../Images/logo.jpg";
 
 const PhoneNumberLoginPage = () => {
-
   const [phoneNumber, setphoneNumber] = useState(""); // Added password state
   const navigate = useNavigate();
-
 
   // const handleLogin = () => {
   //   console.log("Logging in with:", {  phoneNumber });
@@ -16,9 +14,13 @@ const PhoneNumberLoginPage = () => {
   // };
 
   return (
-    <Grid container component="main" sx={{ height: "100vh" }}>
+    <Grid
+      container
+      component="main"
+      sx={{ height: "100vh", boxShadow: "none" }}
+    >
       {/* Left Side - Login Form */}
-      <Grid item xs={12} sm={8} md={6} component={Paper} elevation={6} square>
+      <Grid item xs={12} sm={8} md={6} component={Paper} elevation={0} square>
         <Box
           sx={{
             my: 8,
@@ -37,8 +39,7 @@ const PhoneNumberLoginPage = () => {
             Welcome Back!
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
-          Enter to unlimited access to date & information{" "}
-            
+            Enter to unlimited access to date & information{" "}
           </Typography>
 
           {/* Email Field */}
@@ -51,28 +52,31 @@ const PhoneNumberLoginPage = () => {
             onChange={(e) => setphoneNumber(e.target.value)}
           />
 
-        
           {/* Login Button */}
           <Button
             fullWidth
             variant="contained"
             color="primary"
             sx={{ mb: 2 }}
-            onClick={() => navigate('/otp-login')}
-          
+            onClick={() => navigate("/otp-login")}
           >
-          Get OTP
+            Get OTP
           </Button>
 
           <Typography variant="body2" sx={{ textAlign: "center", mt: 6 }}>
             Create New Account?{" "}
-            <span style={{ color: "#007bff", cursor: "pointer" }}>Sign up</span>
+            <span
+              style={{ color: "#007bff", cursor: "pointer" }}
+              onClick={() => navigate("/register-form")}
+            >
+              Sign up
+            </span>
           </Typography>
         </Box>
       </Grid>
 
       {/* Right Side - Background Image */}
-      <Grid item xs={false} sm={4} md={6} sx={{ p: 0 }}>
+      <Grid item xs={false} sm={4} md={6} sx={{ p: 2, mt: 3 }}>
         <div
           style={{
             backgroundImage: `url(${LoginImage})`,
@@ -80,7 +84,7 @@ const PhoneNumberLoginPage = () => {
             backgroundColor: "#f5f5f5",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            borderRadius: "25px",
+            borderRadius: "50px",
             height: "95%",
             width: "85%",
           }}

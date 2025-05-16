@@ -1,195 +1,306 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import HomeImage from "../../Images/home.jpg";
-import HomeLogo from "../../Images/logo.jpg";
-import { Grid, Card, CardContent, Typography, Box, Chip ,Link,IconButton} from "@mui/material";
-import LanguageIcon from "@mui/icons-material/Language";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
-
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Chip,
+} from "@mui/material";
+import AddTaskDetails from "../../Components/AddTasks/AddTaskDetails";
+import Footer from "../../Components/Footer/Footer";
+import { useLocation } from "react-router-dom";
 
 function HomepageComponent() {
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [filterTask, setFilterTask] = useState([]);
 
-    const tasks = [
-        { category: "Social Media", subCategory: "Marketing", postedDate: "28-12-2024", daysLeft: "2d Left", price: "100,000", color: "blue" },
-        { category: "Backend Developer", subCategory: "Fijis", postedDate: "16-12-2024", daysLeft: "7d Left", price: "50,000", color: "orange" },
-        { category: "Product Design Internship", subCategory: "Strathy", postedDate: "07-12-2024", daysLeft: "9d Left", price: "80,000", color: "green" },
-        { category: "Graphic Design", subCategory: "Marketing", postedDate: "28-12-2024", daysLeft: "2d Left", price: "100,000", color: "red" },
-        { category: "Web Development", subCategory: "Strathy", postedDate: "07-12-2024", daysLeft: "9d Left", price: "80,000", color: "purple" },
-        { category: "Content Writing & Copywriting", subCategory: "Fijis", postedDate: "16-12-2024", daysLeft: "7d Left", price: "50,000", color: "yellow" },
-        { category: "Freelance IT & Software Development", subCategory: "Marketing", postedDate: "28-12-2024", daysLeft: "2d Left", price: "100,000", color: "blue" },
-        { category: "App Development (iOS, Android)", subCategory: "Fijis", postedDate: "16-12-2024", daysLeft: "7d Left", price: "50,000", color: "orange" },
-        { category: "Technical Writing", subCategory: "Strathy", postedDate: "07-12-2024", daysLeft: "9d Left", price: "80,000", color: "green" },
-        { category: "Social Media", subCategory: "Marketing", postedDate: "28-12-2024", daysLeft: "2d Left", price: "100,000", color: "blue" },
-        { category: "Backend Developer", subCategory: "Fijis", postedDate: "16-12-2024", daysLeft: "7d Left", price: "50,000", color: "orange" },
-        { category: "Product Design Internship", subCategory: "Strathy", postedDate: "07-12-2024", daysLeft: "9d Left", price: "80,000", color: "green" },
-        { category: "Graphic Design", subCategory: "Marketing", postedDate: "28-12-2024", daysLeft: "2d Left", price: "100,000", color: "red" },
-        { category: "Web Development", subCategory: "Strathy", postedDate: "07-12-2024", daysLeft: "9d Left", price: "80,000", color: "purple" },
-        { category: "Content Writing & Copywriting", subCategory: "Fijis", postedDate: "16-12-2024", daysLeft: "7d Left", price: "50,000", color: "yellow" },
-      ];
-      
+    const location = useLocation();
+  const selectedCategory = location.state?.selectedCategory;
+  
+//   useEffect(() => {
+//     const selectedCategory = location.state?.selectedCategory;
+
+//     if (selectedCategory) {
+//       const filterData = tasks.filter(task => task.Categories === selectedCategory);
+//       setFilterTask(filterData);
+//     } else {
+//       setFilterTask(tasks); // fallback if no filter is selected
+//     }
+//   }, [location.state?.selectedCategory]);
+
+//   useEffect(() => {
+//     console.log("gggg",location.state?.budget)
+//   const selectedBudget = location.state?.budget;
+
+//   if (selectedBudget) {
+//     const filterData = tasks.filter(task => task.amount <= selectedBudget);
+//     setFilterTask(filterData);
+//   } else {
+//     setFilterTask(tasks); // fallback if no budget is selected
+//   }
+// }, [location.state?.budget]);
+
+
+
+
+// useEffect(() => {
+//   const selectedCategory = location.state?.category;
+//   const fromLocation = location.state?.from;
+//   const toLocation = location.state?.to;
+
+//   if (selectedCategory && fromLocation && toLocation) {
+//     const filteredData = tasks.filter(
+//       (task) =>
+//         task.Categories === selectedCategory &&
+//         task.from === fromLocation &&
+//         task.to === toLocation
+//     );
+//     setFilterTask(filteredData);
+//   } else if (selectedCategory) {
+//     const filteredData = tasks.filter((task) => task.Categories === selectedCategory);
+//     setFilterTask(filteredData);
+//   } else {
+//     setFilterTask(tasks); // fallback if no filter is selected
+//   }
+// }, [location.state.category]);
+
+
+
+  // Define an array of different colors for buttons (chips)
+  useEffect(() => {
+  const selectedCategory = location.state?.selectedCategory;
+  const selectedSubCategory = location.state?.selectedSubCategory;
+  const selectedBudget = location.state?.budget;
+  const transportCategory = location.state?.category;
+  const fromLocation = location.state?.from;
+  const toLocation = location.state?.to;
+
+  let filteredData = tasks;
+
+  // Filter by selected category
+  if (selectedCategory) {
+    filteredData = filteredData.filter(
+      (task) => task.Categories === selectedCategory
+    );
+  }
+
+ // Filter by selected category
+  if (selectedSubCategory) {
+    filteredData = filteredData.filter(
+      (task) => task.Categories === selectedSubCategory
+    );
+  }
+
+
+
+  // Filter by budget
+  if (selectedBudget) {
+    filteredData = filteredData.filter(
+      (task) => task.amount <= selectedBudget
+    );
+  }
+
+  // Filter by Transport-specific category, from, and to
+  if (transportCategory && fromLocation && toLocation) {
+    filteredData = filteredData.filter(
+      (task) =>
+        task.Categories === transportCategory &&
+        task.from === fromLocation &&
+        task.to === toLocation
+    );
+  }
+
+  setFilterTask(filteredData);
+}, [tasks, location.state]);
+
+  const colors = [
+    "#2196f3", // Blue
+    "#4caf50", // Green
+    "#ff9800", // Orange
+    "#e91e63", // Pink
+    "#9c27b0", // Purple
+    "#00bcd4", // Cyan
+    "#f44336", // Red
+    "#3f51b5", // Indigo
+    "#8bc34a", // Light Green
+    "#ffc107", // Amber
+    "#795548", // Brown
+    "#607d8b", // Blue Grey
+    "#673ab7", // Deep Purple
+    "#009688", // Teal
+    "#cddc39"  // Lime
+  ];
+  
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.error("Authorization token missing!");
+          return;
+        }
+
+        const response = await axios.get("http://localhost:3001/task/get-all", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.data.success) {
+          setFilterTask(response.data.data);
+          setTasks(response.data.data);
+        } else {
+          console.error("Failed to fetch tasks");
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  if (selectedTask) {
+    return (
+      <AddTaskDetails
+        task={selectedTask}
+        onBack={() => setSelectedTask(null)}
+      />
+    );
+  }
 
   return (
     <div>
-    
-    <img 
-      src={HomeImage} 
-      alt="Home" 
-      style={{ width: "100%",  height: "auto", borderRadius: "10px" }} 
-    />
-
-
-
-
-<Box sx={{ padding: 0 }}>
-  <Typography variant="h4" align="center" fontWeight="bold" mb={3} mt={3}>
-    All Tasks
-  </Typography>
-  <Grid container spacing={2}>
-    {tasks.map((task, index) => (
-      <Grid item xs={12} sm={6} md={4} key={index}>
-        <Card sx={{ borderRadius: 2, boxShadow: 1, padding: 2, border: "2px solid #ddd",  display: "flex", flexDirection: "column" }}>
-          <CardContent sx={{ flexGrow: 1 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" fontWeight="bold">
-                Category: {task.category}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {task.daysLeft}
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary" mt={1} fontWeight={600} fontSize={16}>
-              Sub Category: {task.subCategory}
+           {/* Hero Section with Text on Image */}
+      <div style={{ position: "relative", width: "100%" }}>
+        <img
+          src={HomeImage}
+          alt="Home"
+          style={{
+            width: "100%",
+            height: "auto",
+            borderRadius: "2px",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: "25%",
+            left: "5%",
+            color: "white",
+            fontSize: "1.5rem",
+            // fontWeight: "bold",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
+          }}
+        >
+      <h1>Empowering Your</h1>
+      <h1>Vision , Building Your Future.</h1> 
+        </div>
+      </div>
+      <Box sx={{ padding: 1 }}>
+        <Typography variant="h4" align="center" fontWeight="bold" mb={3} mt={3}>
+          All Tasks
+        </Typography>
+        <Grid container spacing={2}>
+          {filterTask.length > 0 ? (
+  filterTask.map((task, index) => (
+    <Grid item xs={12} sm={6} md={4} key={index}>
+      <Card
+        onClick={() => setSelectedTask(task)}
+        sx={{
+          borderRadius: 2,
+          boxShadow: 1,
+          border: "2px solid #ddd",
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <CardContent sx={{ flexGrow: 1 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" fontWeight="bold">
+              Category: {task.Categories}
             </Typography>
-           
-          <Box display="flex" justifyContent="space-between" >
-          <Typography variant="body2" color="text.secondary" mt={1} fontWeight={600} fontSize={16}>
-              Posted in: {task.postedDate}
+            <Typography variant="body2" color="textSecondary">
+              {task.daysLeft}
             </Typography>
-            <Chip label={task.price} sx={{ bgcolor: task.color, color: "white", fontSize: 16, padding: "10px" }} />
           </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
-</Box>
+
+{task.Categories === "Transport" ? (
+   <Box mt={1} display="flex" gap={2}>
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      fontWeight={600}
+      fontSize={16}
+    >
+      From: {task.from || "N/A"}
+    </Typography>
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      fontWeight={600}
+      fontSize={16}
+    >
+      To: {task.to || "N/A"}
+    </Typography>
+  </Box>
+) : (
+  <Typography
+    variant="body2"
+    color="text.secondary"
+    mt={1}
+    fontWeight={600}
+    fontSize={16}
+  >
+    Sub Category: {task.SubCategory || "N/A"}
+  </Typography>
+)}
 
 
-<Box sx={{ backgroundColor: "#f8f9fa", p: 4, mt: 5 }}>
-  <Grid container spacing={4}>
-    {/* Left Section */}
-    <Grid item xs={12} md={2}>
-    <img 
-      src={HomeLogo} 
-      alt="Logo" 
-      style={{ width: "100px",  height: "auto", borderRadius: "10px" }} 
-    />
-      <Box display="flex" alignItems="center" mt={2}>
-        <IconButton color="primary">
-          <LanguageIcon />
-        </IconButton>
-        <Typography fontWeight="bold">India / English</Typography>
-      </Box>
-      <Box display="flex" alignItems="center" fontWeight="bold" mt={2}>
-        <IconButton color="primary">
-          <HelpOutlineIcon />
-        </IconButton>
-        <Typography fontWeight="bold">Help & Support</Typography>
-      </Box>
-      <Box display="flex" alignItems="center" fontWeight="bold" mt={2}>
-        <IconButton color="primary">
-          <AccessibilityNewIcon />
-        </IconButton>
-        <Typography fontWeight="bold">Accessibility</Typography>
-      </Box>
+          <Box display="flex" justifyContent="space-between" mt={1}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              fontWeight={600}
+              fontSize={16}
+            >
+              Posted in: {new Date(task.createdAt).toLocaleDateString()}
+            </Typography>
+
+            <Chip
+              label={`₹${task.amount}`}
+              sx={{
+                bgcolor: colors[index % colors.length],
+                color: "white",
+                fontSize: 16,
+                padding: "10px",
+              }}
+            />
+          </Box>
+        </CardContent>
+      </Card>
     </Grid>
+  ))
+) : (
+  <Typography variant="h6" textAlign="center" width="100%">
+    Data Not Available
+  </Typography>
+)}
 
-    {/* Categories Section */}
-    <Grid item xs={12} md={2}>
-      <Typography variant="h6" color="primary" fontWeight="bold">Categories</Typography>
-      {['Projects', 'Contests', 'Freelancers', 'Enterprise', 'AI Development', 'Membership','Preperred','Frelancer','Program','Project'].map((item) => (
-        <Typography key={item} mt={2} fontWeight="bold">
-          <Link href="#" color="inherit" underline="hover">{item}</Link>
-        </Typography>
-      ))}
-    </Grid>
-
-    {/* About Section */}
-    <Grid item xs={12} md={2}>
-      <Typography variant="h6" color="primary" fontWeight="bold">About</Typography>
-      {['About us', 'How it Works', 'Security', 'Investor', 'Sitemap', 'Stories'].map((item) => (
-        <Typography key={item} mt={2} fontWeight="bold">
-          <Link href="#" color="inherit" underline="hover">{item}</Link>
-        </Typography>
-      ))}
-    </Grid>
-
-    {/* Terms Section */}
-    <Grid item xs={12} md={2}>
-      <Typography variant="h6" color="primary" fontWeight="bold">Terms</Typography>
-      {['Privacy Policy', 'Terms and Conditions', 'Copyright Policy', 'Code of Conduct', 'Fees and Charges'].map((item) => (
-        <Typography key={item} mt={2} fontWeight="bold">
-          <Link href="#" color="inherit" underline="hover">{item}</Link>
-        </Typography>
-      ))}
-    </Grid>
-
-    {/* Partners Section */}
-    <Grid item xs={12} md={2}>
-      <Typography variant="h6" color="primary" fontWeight="bold">Partners</Typography>
-      {['Escrow.com', 'Load Shift', 'Warrior Forum'].map((item) => (
-        <Typography key={item} mt={2}fontWeight="bold">
-          <Link href="#" color="inherit" underline="hover">{item}</Link>
-        </Typography>
-      ))}
-    </Grid>
-
-    {/* Apps Section beside Partners Section */}
-    <Grid item xs={12} md={2}>
-      <Typography variant="h6" color="primary" fontWeight="bold" align="center">Apps</Typography>
-      <Box mt={2}>
-        <img src="https://static.vecteezy.com/system/resources/thumbnails/016/290/534/small_2x/google-play-apple-store-logo-icon-button-free-vector.jpg" alt="App Store" width="250" />
-      </Box>
-      {/* <Box mt={2}>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/256px-Google_Play_Store_badge_EN.svg.png" alt="Google Play" width="150" />
-      </Box> */}
-    </Grid>
-  </Grid>
-</Box>
-
-
-    <Box sx={{ backgroundColor: "#1783c7", py: 4, px: 2 ,mt:1}}>
-      <Grid container spacing={4} justifyContent="center">
-        <Grid item xs={12} sm={4} textAlign="center">
-          <Typography variant="h4" fontWeight="bold" color="white">
-            78,598,389
-          </Typography>
-          <Typography variant="h6" fontWeight="bold" color="white">
-            Registered Users
-          </Typography>
         </Grid>
-        <Grid item xs={12} sm={4} textAlign="center">
-          <Typography variant="h4" fontWeight="bold" color="white">
-            24,412,271
-          </Typography>
-          <Typography variant="h6" fontWeight="bold" color="white">
-            Total Jobs Posted
-          </Typography>
-        </Grid>
-        <Grid item xs={12} sm={4} textAlign="center">
-          <Typography variant="h6" fontWeight="bold" color="white">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been.
-          </Typography>
-        </Grid>
-      </Grid>
-    </Box>
+      </Box>
 
-
-
-
-  </div>
-  )
+      <div>
+        <Footer />
+      </div>
+    </div>
+  );
 }
 
-export default HomepageComponent
+export default HomepageComponent;

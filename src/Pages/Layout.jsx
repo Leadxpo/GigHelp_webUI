@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "../Components/NavbarComponent/Navbar";
 import Sidebar from "../Components/SidebarComponent/sidebar";
+import { Box, } from "@mui/material";
+
 
 const Layout = () => {
   const location = useLocation();
@@ -21,7 +23,7 @@ const Layout = () => {
           position: "fixed",
           zIndex: 1000,
           height: "100vh",
-          overflowY: "auto", // Enable scrolling inside sidebar
+          // overflowY: "auto", // Enable scrolling inside sidebar
           backgroundColor: "#fff",
           left: 0, // Ensures sidebar stays on the left
           overflowX: "hidden", // Prevents horizontal scrolling
@@ -53,13 +55,15 @@ const Layout = () => {
           style={{
             flex: 1,
             overflowY: "auto", // Enables vertical scrolling
-            padding: "10px",
-            marginTop: "60px", // Adjust for navbar height
+            padding: "2px",
+            // marginTop: "60px", // Adjust for navbar height
             height: "100vh",
             overflowX: "hidden", // Prevents horizontal scrolling on content
           }}
         >
-          <Outlet />
+           <Box mt={12}> {/* ✅ Margin Top 2 (theme spacing unit) */}
+      <Outlet />
+    </Box>
         </div>
       </div>
     </div>
