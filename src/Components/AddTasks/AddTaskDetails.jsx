@@ -30,6 +30,8 @@ const TaskDetails = (props) => {
   const [disputeTasks, setDisputeTasks] = useState(0);
   const [completedTasks, setCompletedTasks] = useState(0);
   const [documents, setDocuments] = useState([]);
+  const [users, setUsers] = useState([]);
+  
   const navigate = useNavigate();
 
 
@@ -55,6 +57,41 @@ const [fileType, setFileType] = useState("");
     setSelectedDoc(null);
   };
 
+useEffect(() => {
+    const fetchAllUsers = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("Authorization token missing!");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:3001/user/all-user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.data.success) {
+          setUsers(response.data.data); // assuming the users are in `data`
+          console.log("==========>",users)
+        } else {
+          console.error("Failed to fetch users");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error.response?.data || error.message);
+      }
+    };
+
+    fetchAllUsers();
+  }, []);
+
+
+
+
+
+
 
   useEffect(() => {
     if (Array.isArray(props.task?.document)) {
@@ -74,6 +111,23 @@ const [fileType, setFileType] = useState("");
   const handleModalClose = () => setModalOpen(false);
 
   const handleAddBid = async () => {
+
+
+     const token = localStorage.getItem("token");
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    if (!token || !userData?.userId) {
+      alert("Authorization token or user data missing!");
+      return;
+    }
+
+    // Find the current logged-in user's full record from fetched users
+    const currentUser = users.find((user) => user.userId === userData.userId);
+
+    if (!currentUser || currentUser.status !== "Approved") {
+      alert("KYC Pending: Not permitted to add Bids");
+      return;
+    }
     if (!bidOfAmount || !description) {
       alert("Amount and description are required.");
       return;

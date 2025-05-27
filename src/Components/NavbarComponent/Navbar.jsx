@@ -39,7 +39,6 @@ const Navbar = ({ toggleSidebar, hideMenuIcon }) => {
     setUserData(user);
   }, []);
 
-  console.log("==========image", userData);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -110,7 +109,7 @@ const Navbar = ({ toggleSidebar, hideMenuIcon }) => {
             />
           </Box>
 
-          {/* Center Search Bar */}
+          {/* Center Search Bar
           {!isMobile && (
             <Box
               sx={{
@@ -126,7 +125,7 @@ const Navbar = ({ toggleSidebar, hideMenuIcon }) => {
               <SearchIcon sx={{ mr: 1 }} />
               <InputBase placeholder="Search..." fullWidth />
             </Box>
-          )}
+          )} */}
 
           {/* Right Side */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>

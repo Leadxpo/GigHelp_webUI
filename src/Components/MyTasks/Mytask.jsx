@@ -311,10 +311,10 @@ function Mytask() {
                 }}
                 onClick={() => {
                   setShowKYCModal(false);
-                  navigate("/dashboard/profile"); // Change path if your profile route is different
+                  // navigate("/dashboard/profile"); // Change path if your profile route is different
                 }}
               >
-                For More
+                
               </Button>
             </Box>
           </Box>

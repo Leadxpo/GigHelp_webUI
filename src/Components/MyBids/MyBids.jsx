@@ -11,10 +11,12 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BidderView from "../../Components/MyBids/BiddrsView";
+import ApprivedBids from "../../Components/MyBids/ApprivalBids";
 import Footer from "../../Components/Footer/Footer";
 
 function MyBids() {
   const [selectedTask, setSelectedTask] = useState(null);
+  const [approvalBidTask, setApprovalBidTask] = useState(null);
   const [tasks, setTasks] = useState([]);
   const userDetail = JSON.parse(localStorage.getItem("user"));
 
@@ -52,6 +54,12 @@ function MyBids() {
     }
   };
 
+  if (approvalBidTask) {
+    return (
+      <ApprivedBids task={approvalBidTask} onBack={() => setApprovalBidTask(null)} />
+    );
+  }
+
   if (selectedTask) {
     return (
       <BidderView task={selectedTask} onBack={() => setSelectedTask(null)} />
@@ -70,96 +78,115 @@ function MyBids() {
               const color = colors[index % colors.length];
               return (
                 <Grid item xs={12} sm={6} md={4} key={index}>
-<Card
-  sx={{
-    borderRadius: 2,
-    boxShadow: 1,
-    border: `1px solid ${color}`,
-    display: "flex",
-    flexDirection: "column",
-  }}
->
-  <CardContent sx={{ flexGrow: 1 }}>
-    {/* Category and View Button */}
-    <Box display="flex" justifyContent="space-between" alignItems="center">
-      <Typography variant="h6" fontWeight="bold">
-        Category: {task.Categories || "N/A"}
-      </Typography>
-      <Chip
-        label="View"
-        sx={{
-          bgcolor: color,
-          color: "white",
-          fontSize: 14,
-          padding: "5px 10px",
-          cursor: "pointer",
-        }}
-        onClick={() => setSelectedTask(task)}
-      />
-    </Box>
+                  <Card
+                    sx={{
+                      borderRadius: 2,
+                      boxShadow: 1,
+                      border: `1px solid ${color}`,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6" fontWeight="bold">
+                          Category: {task.Categories || "N/A"}
+                        </Typography>
+                        <Chip
+                          label="View"
+                          sx={{
+                            bgcolor: color,
+                            color: "white",
+                            fontSize: 14,
+                            padding: "5px 10px",
+                            cursor: "pointer",
+                          }}
+                          // onClick={() => setSelectedTask(task)}
+                        />
+                      </Box>
 
-    {/* SubCategory and Delete Icon in one line */}
-    {task.Categories === "Transport" ? (
-      <Box mt={1} display="flex" gap={2}>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          fontWeight={600}
-          fontSize={16}
-        >
-          From: {task.from || "N/A"}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          fontWeight={600}
-          fontSize={16}
-        >
-          To: {task.to || "N/A"}
-        </Typography>
-      </Box>
-    ) : (
-      <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          fontWeight={600}
-          fontSize={16}
-        >
-          Sub Category: {task.SubCategory || "N/A"}
-        </Typography>
-        <IconButton color="error" onClick={() => handleDelete(task.BidId)}>
-          <DeleteIcon />
-        </IconButton>
-      </Box>
-    )}
+                      {task.Categories === "Transport" ? (
+                        <Box mt={1} display="flex" gap={2}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight={600}
+                            fontSize={16}
+                          >
+                            From: {task.from || "N/A"}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight={600}
+                            fontSize={16}
+                          >
+                            To: {task.to || "N/A"}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight={600}
+                            fontSize={16}
+                          >
+                            Sub Category: {task.SubCategory || "N/A"}
+                          </Typography>
+                          <IconButton color="error" onClick={() => handleDelete(task.BidId)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      )}
 
-    {/* Posted Date and Bid of Amount in one line */}
-    <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        fontWeight={600}
-        fontSize={16}
-      >
-        Posted in: {task.createdAt?.substring(0, 10) || "N/A"}
-      </Typography>
-      <Box textAlign="right">
-        <Typography
-          variant="body2"
-          fontWeight={600}
-          fontSize={16}
-          color="text.secondary"
-        >
-          Bid Amount:{`₹${task.bidOfAmount || "0"}`}
-        </Typography>
-        
-      </Box>
-    </Box>
-  </CardContent>
-</Card>
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          fontWeight={600}
+                          fontSize={16}
+                        >
+                          Posted in: {task.createdAt?.substring(0, 10) || "N/A"}
+                        </Typography>
+                        <Box textAlign="right">
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            fontSize={16}
+                            color="text.secondary"
+                          >
+                            Bid Amount: ₹{task.bidOfAmount || "0"}
+                          </Typography>
+                        </Box>
+                      </Box>
 
-
+                      {/* Status Chip with approval bid logic */}
+                      <Box display="flex" justifyContent="flex-start" alignItems="center" mt={2}>
+                        <Chip
+                          label={task.status || "Unknown"}
+                          color={
+                            task.status === "running"
+                              ? "success"
+                              : task.status === "pending"
+                              ? "warning"
+                              : "default"
+                          }
+                          sx={{
+                            fontWeight: "bold",
+                            textTransform: "capitalize",
+                            fontSize: 14,
+                            cursor: task.status === "running" ? "pointer" : "default",
+                          }}
+                          onClick={() => {
+                            if (task.status === "running") {
+                              setApprovalBidTask(task);
+                            }
+                          }}
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
                 </Grid>
               );
             })

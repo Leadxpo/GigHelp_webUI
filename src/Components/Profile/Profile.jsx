@@ -267,9 +267,7 @@ const ProfilePage = () => {
               Change Photo
             </Button>
 
-            <Button variant="text" color="error" onClick={handleRemovePhoto}>
-              Remove
-            </Button>
+            
 
             <Box
               sx={{
@@ -279,7 +277,7 @@ const ProfilePage = () => {
                 borderColor:
                   userData?.status === "Pending"
                     ? "orange"
-                    : userData?.status === "approved"
+                    : userData?.status === "Approved"
                     ? "green"
                     : userData?.status === "rejected"
                     ? "red"
@@ -311,9 +309,9 @@ const ProfilePage = () => {
                   color:
                     userData?.status === "Pending"
                       ? "orange"
-                      : userData?.status === "approved"
+                      : userData?.status === "Approved"
                       ? "green"
-                      : userData?.status === "rejected"
+                      : userData?.status === "Rejected"
                       ? "red"
                       : "black",
                 }}
@@ -322,6 +320,7 @@ const ProfilePage = () => {
               </Typography>
             </Box>
 
+          </Stack>
             <Box
               sx={{
                 border: "1px solid red",
@@ -352,11 +351,10 @@ const ProfilePage = () => {
                 {userData?.remarks || "No remarks available."}
               </Typography>
             </Box>
-          </Stack>
 
-          <IconButton onClick={handleEditToggle}>
+          {/* <IconButton onClick={handleEditToggle}>
             <Edit />
-          </IconButton>
+          </IconButton> */}
 
           {isEditing && (
             <Box mt={3} textAlign="center">

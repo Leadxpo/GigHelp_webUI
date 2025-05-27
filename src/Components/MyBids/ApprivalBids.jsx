@@ -10,7 +10,12 @@ import {
   DialogTitle,
   Dialog,
   DialogActions,
-  DialogContent
+  DialogContent,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Stack
 } from "@mui/material";
 import { AttachFile, Image, PictureAsPdf } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +24,8 @@ import ChartBoard from '../../Components/ChatBoard/chatBoard';
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
 import Close from '@mui/icons-material/Close'; // Alias Close -> CloseIcon
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+
 
 
 const TaskDetails = (props) => {
@@ -223,7 +230,41 @@ const handleUpdateBid = async () => {
   }
 };
 
+const [dispopen, setDispOpen] = useState(false);
+  const [status, setStatus] = useState('');
+  const [disDescription, setDisDescription] = useState('');
 
+  const handleDispOpen = () => setDispOpen(true);
+  const handleDipuClose = () => setDispOpen(false);
+
+const taskId = props.task.taskId
+
+console.log("bbbbbbbbbbbb>",taskId)
+const handleDisputeSubmit = async () => {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await axios.put(
+      'http://localhost:3001/task/update-status',
+      {
+        taskId: taskId,  // this goes in the body
+        status: status,
+        description: disDescription,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // this goes in the config object
+        },
+      }
+    );
+
+    console.log('Update Success:', response.data);
+  } catch (error) {
+    console.error('API Error:', error.response?.data || error.message);
+  }
+
+  handleDipuClose();
+};
 
 
 
@@ -232,6 +273,7 @@ const handleUpdateBid = async () => {
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="space-between" mb={2}>
+            <Box>
           <Button
             variant="outlined"
             color="secondary"
@@ -240,7 +282,41 @@ const handleUpdateBid = async () => {
           >
             ← Back
           </Button>
+</Box>
 
+ 
+
+ <Box
+    display="flex"
+    alignItems="center"
+    gap={1}
+    px={2}
+    py={1}
+    mb={3}
+    borderRadius={2}
+    onClick={handleDispOpen}
+    sx={{
+      cursor: 'pointer',
+      backgroundColor: 'primary.main',
+      color: '#ffffff',
+      border: '1px solid',
+      borderColor: 'primary.dark',
+      transition: 'background 0.3s',
+      '&:hover': {
+        backgroundColor: 'primary.dark',
+      },
+    }}
+  >
+    <Typography variant="h6" fontWeight="bold" color="inherit">
+      Raise Dispute
+    </Typography>
+    <ArrowForwardIosIcon sx={{ color: 'inherit' }} />
+  </Box>
+     
+
+
+
+<Box>
           {!editing ? (
             <Button
               variant="contained"
@@ -260,6 +336,8 @@ const handleUpdateBid = async () => {
               Submit
             </Button>
           )}
+
+          </Box>
         </Box>
       </Grid>
 
@@ -661,6 +739,67 @@ const handleUpdateBid = async () => {
         </DialogActions>
       </Dialog>
     </Box>
+
+
+
+
+ {/* Modal */}
+      <Modal open={dispopen} onClose={handleDipuClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 4,
+            mb: 5,
+          }}
+        >
+          <Typography variant="h6" mb={2}>
+            Raise a Dispute
+          </Typography>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={status}
+              label="Status"
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="verified">Verified</MenuItem>
+              <MenuItem value="running">Running</MenuItem>
+              <MenuItem value="dispute">Dispute</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+              <MenuItem value="rejected">Rejected</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            label="Description"
+            value={disDescription}
+            onChange={(e) => setDisDescription(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+
+          <Stack direction="row" justifyContent="space-between">
+            <Button variant="contained" color="primary" onClick={handleDisputeSubmit}>
+              Submit Dispute
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleDipuClose}>
+              Close
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+
 
 
 

@@ -20,6 +20,8 @@ import HelpSupport from "./Pages/help&support";
 import Layout from "./Pages/Layout";
 import Logout from "./Pages/Logout";
 import Notification from "./Pages/Notification";
+import TermsAndConditions from "./Pages/termsAndCondition";
+
 
 
 const PrivateRoute = ({ children }) => {
@@ -72,6 +74,8 @@ function App() {
           <Route path="app-settings" element={<AppSettings />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="help-support" element={<HelpSupport />} />
+          <Route path="terms-conditions" element={<TermsAndConditions />} />
+
           <Route path="logout" element={<Logout onLogout={handleLogout} />} />
           <Route path="*" element={<Navigate to="/dashboard/home" />} />
         </Route>

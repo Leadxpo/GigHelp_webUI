@@ -136,34 +136,40 @@ function HomepageComponent() {
   ];
   
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-        if (!token) {
-          console.error("Authorization token missing!");
-          return;
-        }
-
-        const response = await axios.get("http://localhost:3001/task/get-all", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.data.success) {
-          setFilterTask(response.data.data);
-          setTasks(response.data.data);
-        } else {
-          console.error("Failed to fetch tasks");
-        }
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
+      if (!token) {
+        console.error("Authorization token missing!");
+        return;
       }
-    };
 
-    fetchTasks();
-  }, []);
+      const response = await axios.get("http://localhost:3001/task/get-all", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data.success) {
+        // Filter tasks where status is "verified"
+        const verifiedTasks = response.data.data.filter(
+          (task) => task.status === "verified"
+        );
+
+        setFilterTask(verifiedTasks);
+        setTasks(verifiedTasks);
+      } else {
+        console.error("Failed to fetch tasks");
+      }
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  fetchTasks();
+}, []);
+
 
   if (selectedTask) {
     return (

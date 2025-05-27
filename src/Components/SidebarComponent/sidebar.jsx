@@ -22,6 +22,7 @@ import {
   Logout as LogoutIcon,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const Sidebar = () => {
     { text: "Profile", icon: <PersonIcon />, path: "/dashboard/profile" },
     { text: "App Settings", icon: <SettingsIcon />, path: "/dashboard/app-settings" },
     { text: "Transactions", icon: <PaymentIcon />, path: "/dashboard/transactions" },
+    { text: "Terms & Conditions", icon: <DescriptionIcon   />, path: "/dashboard/terms-conditions" },
     { text: "Help & Support", icon: <HelpIcon />, path: "/dashboard/help-support" },
   ];
 
