@@ -1,8 +1,8 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
-// const baseURL = 'https://server.gighelp.in/';
-const baseURL = 'http://localhost:3001/';
+const baseURL = 'https://server.gighelp.in/';
+// const baseURL = 'http://localhost:3001/';
 
 const ApiService = (() => {
   const axiosInstance = axios.create({

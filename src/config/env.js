@@ -8,9 +8,9 @@ const ENV = {
 };
 
 const getEnvVars = () => {
-  return process.env.NODE_ENV === 'development' ? ENV.development : ENV.production;
+  // return process.env.NODE_ENV === 'development' ? ENV.development : ENV.production;
   // return process.env.NODE_ENV === 'development' ? ENV.production : ENV.development;
-  // return process.env.NO2DE_ENV === 'development' ? ENV.production : ENV.production;
+  return process.env.NO2DE_ENV === 'development' ? ENV.production : ENV.production;
 };
 
 export default getEnvVars;
