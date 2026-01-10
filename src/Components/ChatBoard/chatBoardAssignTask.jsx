@@ -85,7 +85,7 @@ const App = (props) => {
         {
           senderId: senderId,
           receiverId: props?.task?.taskId,
-// bidder Id
+          // bidder Id
           taskId: props?.task?.bidDetails.taskId,
           message: input,
         },
@@ -116,7 +116,7 @@ const App = (props) => {
       sx={{
         maxWidth: 1500,
         mx: "auto",
-        height: "100vh",
+        minHeight: { xs: "80vh", sm: "90vh", md: "100vh" },
         display: "flex",
         flexDirection: "column",
       }}

@@ -68,30 +68,30 @@ function Mytask() {
     fetchTasks();
   }, []);
 
- const handleDelete = async (taskId) => {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this Task?"
-  );
-  if (!confirmDelete) return;
-
-  const token = localStorage.getItem("token"); // Get token from localStorage
-
-  try {
-    await axios.delete(`http://localhost:3001/task/delete/${taskId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`, // Add token in Authorization header
-      },
-    });
-
-    setTasks((prev) => prev.filter((task) => task.taskId !== taskId));
-  } catch (error) {
-    console.error(
-      "Error deleting bid:",
-      error.response?.data || error.message
+  const handleDelete = async (taskId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this Task?"
     );
-    alert("Failed to delete bid.");
-  }
-};
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem("token"); // Get token from localStorage
+
+    try {
+      await axios.delete(`http://localhost:3001/task/delete/${taskId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add token in Authorization header
+        },
+      });
+
+      setTasks((prev) => prev.filter((task) => task.taskId !== taskId));
+    } catch (error) {
+      console.error(
+        "Error deleting bid:",
+        error.response?.data || error.message
+      );
+      alert("Failed to delete bid.");
+    }
+  };
 
   const getColorByStatus = (status) => {
     switch (status) {
@@ -110,24 +110,20 @@ function Mytask() {
     }
   };
 
-  if (selectedTask) {
-    return <AssignTask task={selectedTask} />;
-  }
+  // if (selectedTask) {
+  //   console.log("Assign Task is opened");
+  //   return <AssignTask task={selectedTask} />;
+  // }
 
-  if (showTaskBidder) {
-    return <TaskBidder task={currentTask} />;
-  }
+  // if (showTaskBidder) {
+  //   console.log("Task bar is opened");
+  //   return <TaskBidder task={currentTask} />;
+  // }
 
   return (
     <>
       <Box sx={{ padding: 1 }}>
-        <Typography
-          variant="h4"
-          align="center"
-          fontWeight="bold"
-          mb={3}
-          mt={10}
-        >
+        <Typography variant="h4" align="center" fontWeight="bold" mb={3} mt={2}>
           My Tasks
         </Typography>
 
@@ -143,12 +139,48 @@ function Mytask() {
                   flexDirection: "column",
                   cursor: "pointer",
                 }}
-                onClick={() => {
-                  if (task.status === "verified") {
-                    setSelectedTask(task);
-                  } else if (task.status === "rejected") {
-                    setShowKYCModal(true);
+                // onClick={() => {
+                //   if (task.status === "running") {
+                //     setSelectedTask(task);
+                //   } else if (task.status === "rejected") {
+                //     setShowKYCModal(true);
+                //   } else if (task.status === "verified") {
+                //     setShowTaskBidder(true);
+                //     setCurrentTask(task);
+                //   }
+                // }}
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  if (
+                    task.status === "assigned" ||
+                    task.status === "paymentRequested" ||
+                    task.status === "completed"
+                  ) {
+                    // navigate("AssignTask", { task });
+                    navigate(`/mytasks/assigned-task/${task.taskId}`, {
+                      state: { task },
+                    });
+                  } else if (task.status === "disputed") {
+                    navigate("DisputeRaised", { task });
+                  } else {
+                    // navigate("TaskBidder", { task });
+                    navigate(`/my-tasks/${task.taskId}`, {
+                      state: { task },
+                    });
                   }
+
+                  // if (task.status === "pending") {
+                  //   navigate(`/mytasks/task/${task.taskId}`, {
+                  //     state: { task },
+                  //   });
+                  // } else if (task.status === "rejected") {
+                  //   setShowKYCModal(true);
+                  // } else if (task.status === "verified") {
+                  //   navigate(`/mytasks/assigned-task/${task.taskId}`, {
+                  //     state: { task },
+                  //   });
+                  // }
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
@@ -249,17 +281,17 @@ function Mytask() {
                         padding: "10px",
                         cursor: "pointer",
                       }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (task.status === "pending") {
-                          setShowTaskBidder(true);
-                          setCurrentTask(task);
-                        } else if (task.status === "rejected") {
-                          setShowKYCModal(true);
-                        } else if (task.status === "verified") {
-                          setSelectedTask(task);
-                        }
-                      }}
+                      // onClick={(e) => {
+                      //   e.stopPropagation();
+                      //   if (task.status === "pending") {
+                      //     setShowTaskBidder(true);
+                      //     setCurrentTask(task);
+                      //   } else if (task.status === "rejected") {
+                      //     setShowKYCModal(true);
+                      //   } else if (task.status === "verified") {
+                      //     setSelectedTask(task);
+                      //   }
+                      // }}
                     />
                   </Box>
                 </CardContent>
@@ -313,9 +345,7 @@ function Mytask() {
                   setShowKYCModal(false);
                   // navigate("/dashboard/profile"); // Change path if your profile route is different
                 }}
-              >
-                
-              </Button>
+              ></Button>
             </Box>
           </Box>
         </Modal>

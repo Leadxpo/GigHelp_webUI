@@ -29,15 +29,15 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { text: "Home", icon: <HomeIcon />, path: "/dashboard/home" },
-    { text: "Add Task", icon: <TaskIcon />, path: "/dashboard/add-task" },
-    { text: "All Tasks", icon: <ListAltIcon />, path: "/dashboard/all-tasks" },
-    { text: "My Bids", icon: <GavelIcon />, path: "/dashboard/my-bids" },
-    { text: "Profile", icon: <PersonIcon />, path: "/dashboard/profile" },
-    { text: "App Settings", icon: <SettingsIcon />, path: "/dashboard/app-settings" },
-    { text: "Transactions", icon: <PaymentIcon />, path: "/dashboard/transactions" },
-    { text: "Terms & Conditions", icon: <DescriptionIcon   />, path: "/dashboard/terms-conditions" },
-    { text: "Help & Support", icon: <HelpIcon />, path: "/dashboard/help-support" },
+    { text: "Home", icon: <HomeIcon />, path: "/home" },
+    { text: "Add Task", icon: <TaskIcon />, path: "/add-task" },
+    { text: "All Tasks", icon: <ListAltIcon />, path: "/all-tasks" },
+    { text: "My Bids", icon: <GavelIcon />, path: "/my-bids" },
+    { text: "Profile", icon: <PersonIcon />, path: "/profile" },
+    { text: "App Settings", icon: <SettingsIcon />, path: "/app-settings" },
+    { text: "Transactions", icon: <PaymentIcon />, path: "/transactions" },
+    { text: "Terms & Conditions", icon: <DescriptionIcon   />, path: "//terms-conditions" },
+    { text: "Help & Support", icon: <HelpIcon />, path: "/help-support" },
   ];
 
   const handleNavigate = (path) => {
@@ -46,34 +46,31 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     // handleMenuClose();
-    localStorage.clear(); // Clear local storage
-    navigate("/"); // Navigate to login page
+    localStorage.clear();
+    navigate("/"); 
   };
 
   return (
     <Box
       sx={{
         width: 260,
-        height: "100vh",
+        height: "90vh",
         backgroundColor: "#fff",
         boxShadow: "5px 0 10px rgba(44, 13, 156, 0.1)",
         borderRight: "3px solid rgba(0, 0, 0, 0.1)",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between", // important for Logout button at bottom
+        justifyContent: "space-between", 
       }}
     >
       <Box>
-        {/* Profile Section */}
         <Box sx={{ p: 2, textAlign: "center", display: "flex", alignItems: "center" }}>
-          <Avatar src="/path/to/profile.jpg" sx={{ width: 50, height: 50, mr: 2 }} />
+          <Avatar src="/path/to/profile.jpg" sx={{ width: 50, height: 48, mr: 2 }} />
           <Typography fontWeight="bold" fontSize="16px">Ayaan</Typography>
         </Box>
 
-        {/* Thick Divider */}
-        <Divider sx={{ borderBottomWidth: 2, height:20}} /> {/* increased thickness */}
+        <Divider sx={{ borderBottomWidth: 2, height:20}} /> 
 
-        {/* Sidebar Menu */}
         <List sx={{ gap: 2, display: "flex", flexDirection: "column", mt: 2 }}>
           {menuItems.map((item, index) => (
             <ListItem
@@ -101,7 +98,6 @@ const Sidebar = () => {
         </List>
       </Box>
 
-      {/* Logout Button */}
       <Box sx={{ p: 2 }}>
         <Button
           variant="contained"

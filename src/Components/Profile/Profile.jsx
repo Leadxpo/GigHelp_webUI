@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   Box,
@@ -30,13 +31,16 @@ import {
   ArrowForward,
   Fullscreen,
 } from "@mui/icons-material";
+import ApiService from "../../services/ApiServices";
 import UploadIcon from "@mui/icons-material/Upload";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(
     () => JSON.parse(localStorage.getItem("user")) || {}
   );
+
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   const [totalTasks, setTotalTasks] = useState(0);
   const [disputeTasks, setDisputeTasks] = useState(0);
@@ -49,24 +53,108 @@ const ProfilePage = () => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
-  const [profileData, setProfileData] = useState({
-    userName: userData?.userName || "",
-    email: userData?.email || "",
-    phoneNumber: userData?.phoneNumber || "",
-    address: userData?.address || "",
+  const [userProfile, setUserProfile] = useState([]);
+  console.log(userProfile, "user profile");
+  const [identityProofArray, setIdentityProofArray] = useState([]);
 
-    accountHolder: userData?.accountHolder || "",
-    accountNumber: userData?.accountNumber || "",
-    bankName: userData?.bankName || "",
-    ifscCode: userData?.ifscCode || "",
-
-    skills: userData?.skills || [], // ← Add this line
+  const [editSection, setEditSection] = useState({
+    profile: false,
+    identityProof: false,
+    bank: false,
+    skills: false,
   });
 
-  const handleEditToggle = () => {
-    setIsEditing(true);
-    setUpdateSuccess(false); // Allow editing again
+  const [profileData, setProfileData] = useState({
+    userName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    accountHolder: "",
+    accountNumber: "",
+    bankName: "",
+    ifscCode: "",
+    skills: [],
+    // add other fields if needed
+  });
+
+  // const handleEditToggle = () => {
+  //   setIsEditing(true);
+  //   setUpdateSuccess(false);
+  // };
+
+  const handleEditToggle = (section) => {
+    setEditSection((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
+
+  const fetchUserDetails = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      // const response = await axios.get("https://server.gighelp.in/user/get-user", {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
+      const response = await ApiService.get("/user/get-user");
+
+      const user = response.data;
+
+      setUserData(user);
+
+      setProfileData({
+        userName: user.userName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        address: user.address || "",
+        accountHolder: user.accountHolder || "",
+        accountNumber: user.accountNumber || "",
+        bankName: user.bankName || "",
+        ifscCode: user.ifscCode || "",
+        skills: user.skills || [],
+      });
+
+      let parsedIdentityProof = [];
+      try {
+        if (typeof user.identityProof === "string") {
+          parsedIdentityProof = JSON.parse(user.identityProof);
+        } else if (Array.isArray(user.identityProof)) {
+          parsedIdentityProof = user.identityProof;
+        }
+      } catch (err) {
+        console.warn("Could not parse identityProof:", err);
+      }
+
+      setIdentityProofArray(parsedIdentityProof);
+
+      // setIdentityProofArray(user.identityProof || []);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      if (
+        error.response?.status === 401 ||
+        error.response?.data?.error?.includes("expired")
+      ) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        alert("Something went wrong while fetching user profile.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, [navigate]);
+
+  console.log(userData, "aaaaaaaaaaaaaaaaaa");
 
   useEffect(() => {
     if (userData?.identityProof) {
@@ -181,6 +269,11 @@ const ProfilePage = () => {
         });
       }
 
+      console.log("FormData content:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ": ", pair[1]);
+      }
+
       const res = await axios.put(
         `http://localhost:3001/user/user-update/${userData.userId}`,
         formData,
@@ -197,7 +290,8 @@ const ProfilePage = () => {
       setIsEditing(false);
       setUpdateSuccess(true);
       alert("Profile updated successfully");
-      window.location.reload();
+      // window.location.reload();
+      await fetchUserDetails();
     } catch (err) {
       console.error("Update Error:", err.response?.data || err.message);
       alert("Failed to update profile");
@@ -209,20 +303,20 @@ const ProfilePage = () => {
     setSelectedProofFile(files); // Store array of files
   };
 
+  // let identityProofArray = [];
 
+  // try {
+  //   identityProofArray = Array.isArray(userData.identityProof)
+  //     ? userData.identityProof
+  //     : JSON.parse(userData.identityProof);
+  // } catch (error) {
+  //   console.error("Failed to parse identityProof", error);
+  // }
 
-  let identityProofArray = [];
-
-  try {
-    identityProofArray = Array.isArray(userData.identityProof)
-      ? userData.identityProof
-      : JSON.parse(userData.identityProof);
-  } catch (error) {
-    console.error("Failed to parse identityProof", error);
-  }
+  const IMAGE_URL = "http://localhost:3001/images/userdp";
 
   return (
-    <Box p={4}>
+    <Box px={{ xs: 2, sm: 4 }} py={4}>
       {/* Header Section */}
       <Typography variant="h4" fontWeight="bold" textAlign="center" mb={4}>
         Profile Details
@@ -237,7 +331,12 @@ const ProfilePage = () => {
       />
 
       {/* Profile Picture Section */}
-      <Grid container justifyContent="left" alignItems="left" spacing={4}>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        flexDirection={{ xs: "column", sm: "row" }}
+      >
         <Grid item>
           <Avatar
             src={
@@ -246,7 +345,7 @@ const ProfilePage = () => {
                 : userData?.profilePic?.startsWith("blob:") // local preview case
                 ? userData.profilePic
                 : userData?.profilePic
-                ? `http://localhost:3001/storege/userdp/${userData.profilePic}`
+                ? `${IMAGE_URL}/${userData.profilePic}`
                 : ""
             }
             sx={{
@@ -266,8 +365,6 @@ const ProfilePage = () => {
             <Button variant="outlined" onClick={handleChangePhotoClick}>
               Change Photo
             </Button>
-
-            
 
             <Box
               sx={{
@@ -319,38 +416,37 @@ const ProfilePage = () => {
                 {userData?.status}
               </Typography>
             </Box>
-
           </Stack>
-            <Box
-              sx={{
-                border: "1px solid red",
-                borderRadius: "8px",
-                alignSelf: "flex-end",
-                padding: 1,
-                marginTop: 2,
-                maxWidth: "600px",
-                maxHeight: "100px",
-                overflowY: "auto",
-                whiteSpace: "pre-wrap",
-                backgroundColor: "#ffe6e6", // light red background
-              }}
+          <Box
+            sx={{
+              border: "1px solid red",
+              borderRadius: "8px",
+              alignSelf: "flex-end",
+              padding: 1,
+              marginTop: 2,
+              maxWidth: "600px",
+              maxHeight: "100px",
+              overflowY: "auto",
+              whiteSpace: "pre-wrap",
+              backgroundColor: "#ffe6e6", // light red background
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              color="red"
+              mb={1}
             >
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                color="red"
-                mb={1}
-              >
-                Remarks:
-              </Typography>
-              <Typography
-                variant="body2"
-                color="red"
-                sx={{ textAlign: "justify" }}
-              >
-                {userData?.remarks || "No remarks available."}
-              </Typography>
-            </Box>
+              Remarks:
+            </Typography>
+            <Typography
+              variant="body2"
+              color="red"
+              sx={{ textAlign: "justify" }}
+            >
+              {userData?.remarks || "No remarks available."}
+            </Typography>
+          </Box>
 
           {/* <IconButton onClick={handleEditToggle}>
             <Edit />
@@ -393,7 +489,8 @@ const ProfilePage = () => {
             <Typography variant="h6" fontWeight="bold">
               Profile Details
             </Typography>
-            <IconButton onClick={handleEditToggle}>
+            {/* <IconButton onClick={handleEditToggle}> */}
+            <IconButton onClick={() => handleEditToggle("profile")}>
               <Edit />
             </IconButton>
           </Box>
@@ -408,7 +505,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Person sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.profile ? (
                       <TextField
                         size="small"
                         value={profileData.userName}
@@ -429,7 +527,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Email sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.profile ? (
                       <TextField
                         size="small"
                         value={profileData.email}
@@ -448,7 +547,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Phone sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.profile ? (
                       <TextField
                         size="small"
                         value={profileData.phoneNumber}
@@ -467,7 +567,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <LocationOn sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.profile ? (
                       <TextField
                         size="small"
                         value={profileData.address}
@@ -486,7 +587,8 @@ const ProfilePage = () => {
               </Grid>
             </Grid>
             <Grid item>
-              {isEditing && (
+              {/* {isEditing && ( */}
+              {editSection.profile && (
                 <Box mt={3} textAlign="center">
                   <Button
                     variant="contained"
@@ -522,7 +624,8 @@ const ProfilePage = () => {
             <Typography variant="h6" gutterBottom>
               Identity Proof
             </Typography>
-            <IconButton onClick={handleEditToggle}>
+            {/* <IconButton onClick={handleEditToggle}> */}
+            <IconButton onClick={() => handleEditToggle("identityProof")}>
               <Edit />
             </IconButton>
           </Box>
@@ -534,7 +637,7 @@ const ProfilePage = () => {
               identityProofArray.map((file, index) => (
                 <img
                   key={index}
-                  src={`http://localhost:3001/storege/userdp/${file}`}
+                  src={`${IMAGE_URL}/${file}`}
                   alt={`Identity Proof ${index + 1}`}
                   style={{
                     width: 100,
@@ -599,7 +702,8 @@ const ProfilePage = () => {
             <Typography variant="h6" fontWeight="bold">
               Bank Details
             </Typography>
-            <IconButton onClick={handleEditToggle}>
+            {/* <IconButton onClick={handleEditToggle}> */}
+            <IconButton onClick={() => handleEditToggle("bank")}>
               <Edit />
             </IconButton>
           </Box>
@@ -614,7 +718,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <AccountCircle sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.bank ? (
                       <TextField
                         size="small"
                         value={profileData.accountHolder}
@@ -635,7 +740,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <CreditCard sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.bank ? (
                       <TextField
                         size="small"
                         value={profileData.accountNumber}
@@ -656,7 +762,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <AccountBalance sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.bank ? (
                       <TextField
                         size="small"
                         value={profileData.bankName}
@@ -675,7 +782,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Numbers sx={{ color: "#1B88CA" }} />
-                    {isEditing ? (
+                    {/* {isEditing ? ( */}
+                    {editSection.bank ? (
                       <TextField
                         size="small"
                         value={profileData.ifscCode}
@@ -694,7 +802,8 @@ const ProfilePage = () => {
               </Grid>
             </Grid>
             <Grid item>
-              {isEditing && (
+              {/* {isEditing && ( */}
+              {editSection.bank && (
                 <Box mt={3} textAlign="center">
                   <Button
                     variant="contained"
@@ -722,10 +831,25 @@ const ProfilePage = () => {
         }}
       >
         <CardContent>
-          <Typography variant="h6" fontWeight="bold" mb={2}>
-            Skills & Experience
-          </Typography>
-          {Array.isArray(profileData.skills) &&
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={4}
+          >
+            <Typography variant="h6" fontWeight="bold" mb={2}>
+              Skills & Experience
+            </Typography>
+            <IconButton
+              onClick={() =>
+                setEditSection((prev) => ({ ...prev, skills: !prev.skills }))
+              }
+            >
+              <Edit />
+            </IconButton>
+          </Box>
+
+          {/* {Array.isArray(profileData.skills) &&
           profileData.skills.length > 0 ? (
             profileData.skills.map((skill, index) => (
               <Box
@@ -738,12 +862,6 @@ const ProfilePage = () => {
                 <Typography>
                   <strong>Work:</strong> {skill.work}
                 </Typography>
-                {/* <Typography>
-                  <strong>Title:</strong> {skill.title}
-                </Typography>
-                <Typography>
-                  <strong>Description:</strong> {skill.content}
-                </Typography> */}
                 <Typography>
                   <strong>Experience:</strong> {skill.experience}
                 </Typography>
@@ -753,6 +871,71 @@ const ProfilePage = () => {
             <Typography>
               No skills or experience information available.
             </Typography>
+          )} */}
+
+          {Array.isArray(profileData.skills) &&
+          profileData.skills.length > 0 ? (
+            profileData.skills.map((skill, index) => (
+              <Box
+                key={index}
+                mb={2}
+                p={2}
+                border="1px solid #ddd"
+                borderRadius={2}
+              >
+                {editSection.skills ? (
+                  <>
+                    <TextField
+                      label="Work"
+                      size="small"
+                      value={skill.work}
+                      onChange={(e) => {
+                        const newSkills = [...profileData.skills];
+                        newSkills[index].work = e.target.value;
+                        setProfileData({ ...profileData, skills: newSkills });
+                      }}
+                      sx={{ mb: 1 }}
+                      fullWidth
+                    />
+                    <TextField
+                      label="Experience"
+                      size="small"
+                      value={skill.experience}
+                      onChange={(e) => {
+                        const newSkills = [...profileData.skills];
+                        newSkills[index].experience = e.target.value;
+                        setProfileData({ ...profileData, skills: newSkills });
+                      }}
+                      fullWidth
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Typography>
+                      <strong>Work:</strong> {skill.work}
+                    </Typography>
+                    <Typography>
+                      <strong>Experience:</strong> {skill.experience}
+                    </Typography>
+                  </>
+                )}
+              </Box>
+            ))
+          ) : (
+            <Typography>
+              No skills or experience information available.
+            </Typography>
+          )}
+          {editSection.skills && (
+            <Box mt={2} textAlign="center">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleUpdateProfile} 
+              >
+                Update Skills
+              </Button>
+            </Box>
           )}
         </CardContent>
       </Card>

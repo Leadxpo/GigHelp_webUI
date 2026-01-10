@@ -13,8 +13,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import BidderView from "../../Components/MyBids/BiddrsView";
 import ApprivedBids from "../../Components/MyBids/ApprivalBids";
 import Footer from "../../Components/Footer/Footer";
+import { useNavigate } from "react-router-dom";
 
 function MyBids() {
+  const navigate = useNavigate();
   const [selectedTask, setSelectedTask] = useState(null);
   const [approvalBidTask, setApprovalBidTask] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -67,130 +69,170 @@ function MyBids() {
   }
 
   return (
-    <>
-      <Box sx={{ padding: 2 }}>
-        <Typography variant="h4" align="center" fontWeight="bold" mb={3} mt={3}>
-          My Bids
-        </Typography>
-        <Grid container spacing={2}>
-          {tasks.length > 0 ? (
-            tasks.map((task, index) => {
-              const color = colors[index % colors.length];
-              return (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card
-                    sx={{
-                      borderRadius: 2,
-                      boxShadow: 1,
-                      border: `1px solid ${color}`,
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h6" fontWeight="bold">
-                          Category: {task.Categories || "N/A"}
-                        </Typography>
-                        <Chip
-                          label="View"
-                          sx={{
-                            bgcolor: color,
-                            color: "white",
-                            fontSize: 14,
-                            padding: "5px 10px",
-                            cursor: "pointer",
-                          }}
-                          // onClick={() => setSelectedTask(task)}
-                        />
-                      </Box>
+  <>
+    <Box sx={{ px: { xs: 1, sm: 2 }, py: { xs: 2, sm: 3 } }}>
+      <Typography
+        variant="h5"
+        align="center"
+        fontWeight="bold"
+        mb={3}
+        mt={3}
+        sx={{ fontSize: { xs: "2.25rem", sm: "2.25rem" } }}
+      >
+        My Bids
+      </Typography>
 
-                      {task.Categories === "Transport" ? (
-                        <Box mt={1} display="flex" gap={2}>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            fontWeight={600}
-                            fontSize={16}
-                          >
-                            From: {task.from || "N/A"}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            fontWeight={600}
-                            fontSize={16}
-                          >
-                            To: {task.to || "N/A"}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            fontWeight={600}
-                            fontSize={16}
-                          >
-                            Sub Category: {task.SubCategory || "N/A"}
-                          </Typography>
-                          <IconButton color="error" onClick={() => handleDelete(task.BidId)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      )}
+      <Grid container spacing={2}>
+        {tasks.length > 0 ? (
+          tasks.map((task, index) => {
+            const color = colors[index % colors.length];
+            return (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    border: `1px solid ${color}`,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    {/* Header: Category and View */}
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      flexWrap="wrap"
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        sx={{ fontSize: { xs: 15, sm: 16 } }}
+                      >
+                        Category: {task.Categories || "N/A"}
+                      </Typography>
 
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                      <Chip
+                        label="View"
+                        onClick={() => setSelectedTask(task)}
+                        sx={{
+                          bgcolor: color,
+                          color: "white",
+                          fontSize: 13,
+                          px: 1,
+                          mt: { xs: 1, sm: 0 },
+                          cursor: "pointer",
+                        }}
+                      />
+                    </Box>
+
+                    {/* From/To or SubCategory + Delete */}
+                    {task.Categories === "Transport" ? (
+                      <Box mt={1} display="flex" flexDirection="column" gap={0.5}>
                         <Typography
                           variant="body2"
                           color="text.secondary"
                           fontWeight={600}
-                          fontSize={16}
+                          fontSize={14}
                         >
-                          Posted in: {task.createdAt?.substring(0, 10) || "N/A"}
+                          From: {task.from || "N/A"}
                         </Typography>
-                        <Box textAlign="right">
-                          <Typography
-                            variant="body2"
-                            fontWeight={600}
-                            fontSize={16}
-                            color="text.secondary"
-                          >
-                            Bid Amount: ₹{task.bidOfAmount || "0"}
-                          </Typography>
-                        </Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          fontWeight={600}
+                          fontSize={14}
+                        >
+                          To: {task.to || "N/A"}
+                        </Typography>
                       </Box>
+                    ) : (
+                      <Box
+                        mt={1}
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        flexWrap="wrap"
+                      >
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          fontWeight={600}
+                          fontSize={14}
+                        >
+                          Sub Category: {task.SubCategory || "N/A"}
+                        </Typography>
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleDelete(task.BidId)}
+                          sx={{ mt: { xs: 1, sm: 0 } }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    )}
 
-                      {/* Status Chip with approval bid logic */}
-                      <Box display="flex" justifyContent="flex-start" alignItems="center" mt={2}>
-                        <Chip
-                          label={task.status || "Unknown"}
-                          color={
-                            task.status === "running"
-                              ? "success"
-                              : task.status === "pending"
-                              ? "warning"
-                              : "default"
+                    {/* Posted in & Bid Amount */}
+                    <Box
+                      mt={2}
+                      display="flex"
+                      justifyContent="space-between"
+                      flexDirection={{ xs: "column", sm: "row" }}
+                      alignItems={{ xs: "flex-start", sm: "center" }}
+                      gap={1}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        fontWeight={600}
+                        fontSize={14}
+                      >
+                        Posted in: {task.createdAt?.substring(0, 10) || "N/A"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        fontSize={14}
+                        color="text.secondary"
+                      >
+                        Bid Amount: ₹{task.bidOfAmount || "0"}
+                      </Typography>
+                    </Box>
+
+                    {/* Status Chip */}
+                    <Box mt={2}>
+                      <Chip
+                        label={task.status || "Unknown"}
+                        color={
+                          task.status === "running"
+                            ? "success"
+                            : task.status === "pending"
+                            ? "warning"
+                            : "default"
+                        }
+                        sx={{
+                          fontWeight: "bold",
+                          textTransform: "capitalize",
+                          fontSize: 13,
+                          cursor: task.status === "running" ? "pointer" : "default",
+                        }}
+                        onClick={() => {
+                          if (task.status === "running") {
+                            setApprovalBidTask(task);
                           }
-                          sx={{
-                            fontWeight: "bold",
-                            textTransform: "capitalize",
-                            fontSize: 14,
-                            cursor: task.status === "running" ? "pointer" : "default",
-                          }}
-                          onClick={() => {
-                            if (task.status === "running") {
-                              setApprovalBidTask(task);
-                            }
-                          }}
-                        />
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              );
-            })
-          ) : (
+                        }}
+                      />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })
+        ) : (
+          <Grid item xs={12}>
             <Typography
               variant="body1"
               color="text.secondary"
@@ -199,13 +241,17 @@ function MyBids() {
             >
               No bids found.
             </Typography>
-          )}
-        </Grid>
-      </Box>
+          </Grid>
+        )}
+      </Grid>
+    </Box>
 
+    <Box mt={4}>
       <Footer />
-    </>
-  );
+    </Box>
+  </>
+);
+  
 }
 
 export default MyBids;

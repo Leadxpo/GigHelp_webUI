@@ -14,13 +14,25 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  IconButton,
 } from "@mui/material";
 import ChartBoard from "../../Components/ChatBoard/ChatBoardmyTask";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CloseIcon from "@mui/icons-material/Close";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ProfileCard from "../ProfileCard/ProfileCard";
+import { useLocation, useNavigate } from "react-router-dom";
+import ApiService from "../../services/ApiServices";
 
-const CandidateCard = ({ bidder }) => {
+const CandidateCard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const bidder = location.state?.bidder;
+  const task = location.state?.task;
+  console.log("Bidder Details:", bidder);
 
   const [assignedName, setAssignedName] = useState("");
   const [amount, setAmount] = useState("");
@@ -39,36 +51,75 @@ const CandidateCard = ({ bidder }) => {
   const handleTransferClose = () => setOpenTransferModal(false);
   const handleSuccessClose = () => setOpenSuccessModal(false);
 
+  // const handleTransferPayment = async () => {
+  //   if (!assignedName || !bidder || !bidder.bidDetails) {
+  //     console.error("Missing required fields");
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:3001/transections/create",
+  //       {
+  //         name: assignedName,
+  //         amount: bidder.bidDetails.bidOfAmount,
+  //         taskOwner: userId,
+  //         userId: userId,
+  //         taskUser: bidder.bidDetails.userId,
+  //         categoryName: bidder.bidDetails.Categories,
+  //       }
+  //     );
+
+  //     console.log("Transfer Payment Response:", response);
+
+  //     if (response.status === 200 || response.status === 201) {
+  //       setOpenTransferModal(false);
+  //       setOpenSuccessModal(true);
+  //     }
+  //   } catch (err) {
+  //     console.error(
+  //       "Transfer Payment Error:",
+  //       err?.response?.data || err.message
+  //     );
+  //   }
+  // };
+
   const handleTransferPayment = async () => {
-    if (!assignedName || !bidder || !bidder.bidDetails) {
-      console.error("Missing required fields");
-      return;
-    }
+    if (!bidder || !bidder.bidDetails) return;
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/transections/create",
-        {
-          name: assignedName,
-          amount: bidder.bidDetails.bidOfAmount,
-          taskOwner: userId,
-          userId: userId,
-          taskUser: bidder.bidDetails.userId,
-          categoryName: bidder.bidDetails.Categories,
-        }
-      );
+      // 1. Create transaction
+      const payload = {
+        userId: Number(userId), // the task owner who is paying
+        bidId: bidder.bidDetails.BidId || null, // related bid
+        taskId: Number(bidder.bidDetails.taskId),
+        amount: Number(bidder.bidDetails.bidOfAmount),
+        typeOfPayment: "debit", // since task owner is paying
+        payerRole: "taskOwner",
+        paymentMethod: "UPI", // optional
+      };
 
-      console.log("Transfer Payment Response:", response);
+      const response = await ApiService.post("transections/create", payload);
 
-      if (response.status === 200 || response.status === 201) {
+      if (response.success === true || response.status === 201) {
+        // 2. Update task status
+        await ApiService.patch("task/update-task", {
+          taskId: Number(bidder.bidDetails.taskId),
+          status: "assigned",
+          assignedBidderId: bidder.bidDetails.bidUserId,
+        });
+
+        // 3. Update bid status
+        await ApiService.patch(`Bids/update/${bidder.bidDetails.BidId}`, {
+          status: "approved",
+        });
+
+        // 4. Close modal & show success
         setOpenTransferModal(false);
         setOpenSuccessModal(true);
       }
     } catch (err) {
-      console.error(
-        "Transfer Payment Error:",
-        err?.response?.data || err.message
-      );
+      console.error("Transfer Error:", err.response?.data || err.message);
     }
   };
 
@@ -114,120 +165,74 @@ const CandidateCard = ({ bidder }) => {
     }
   };
 
+  const handleRedirection = () => {
+    setOpenSuccessModal(false);
+    // navigate('AssignTask', {task, bidder});
+    navigate(`/mytasks/assigned-task/${bidder.bidDetails?.taskId}`, {
+      state: {
+        task,
+        bidder,
+      },
+    });
+  };
+
   return (
     <Paper
       elevation={3}
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         borderRadius: 3,
-        maxWidth: "90%",
+        maxWidth: "95%",
         margin: "auto",
-        mt: 5,
+        // mt: { xs: 3, sm: 5 },
+        mt: 12,
       }}
     >
-      {/* Header */}
-      <Grid container alignItems="center" justifyContent="space-between">
-        <Grid item display="flex" alignItems="center" gap={2}>
-          <Avatar
-            alt="Alexandra"
-            src={
-              bidder?.profilePic
-                ? `http://localhost:3001/storege/userdp/${bidder?.profilePic}`
-                : ""
-            }
-            sx={{ width: 64, height: 64, border: "2px solid orange" }}
-          />
-          <Box>
-            <Typography variant="h6">{bidder?.userName}</Typography>
-            <Typography variant="body2">
-              Experience : {bidder?.experiance}
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ borderRadius: 2 }}
-            onClick={handleAssignOpen}
-          >
-            Approved Bids
-          </Button>
-        </Grid>
+      <Grid item xs={12} sm={4} textAlign={{ xs: "left", sm: "right" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{
+            borderRadius: 2,
+            width: { xs: "100%", sm: "auto" },
+            mt: { xs: 2, sm: 0 },
+          }}
+          onClick={handleAssignOpen}
+        >
+          Approve Bid
+        </Button>
       </Grid>
 
-      {/* Skills */}
-      <Grid container spacing={2} mt={3}>
-        {bidder?.skills?.map((skill, index) => (
-          <Grid item xs={12} md={6} key={index}>
-            <Box sx={{ backgroundColor: "#eee", p: 2, borderRadius: 2 }}>
-              <Grid container justifyContent="space-between">
-                <Grid item xs={6}>
-                  <Typography fontWeight={600}>
-                    Skill : {skill.title}
-                  </Typography>
-                  <Box
-                    sx={{
-                      borderBottom: "2px solid black",
-                      width: "90%",
-                      mt: 1,
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography fontWeight={600}>
-                    Experience : {skill.experience}
-                  </Typography>
-                  <Box
-                    sx={{
-                      borderBottom: "2px solid black",
-                      width: "90%",
-                      mt: 1,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-
-              {/* Optionally show additional info like work or content */}
-              <Grid container mt={2}>
-                <Grid item xs={12}>
-                  <Typography fontWeight={600}>Work: {skill.work}</Typography>
-                  <Typography>Description: {skill.content}</Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+      {bidder ? <ProfileCard bidder={bidder} /> : null}
 
       <Divider sx={{ my: 4 }} />
 
       {/* Chat Section */}
       <Box>
         <Typography variant="h6" mb={2}>
-          Chat Board Bidere
+          Chat Board Bidder
         </Typography>
         <ChartBoard task={bidder} />
       </Box>
 
-      <Box>
+      {/* Money Transfer */}
+      {/* <Box mt={3}>
         <Button
           variant="contained"
           color="primary"
+          fullWidth
           onClick={handleOpen}
-          alignItems="center"
         >
-          Money Transfor Request
+          Money Transfer Request
         </Button>
 
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
           <DialogTitle>Task Completion Details</DialogTitle>
           <DialogContent>
             <TextField
               autoFocus
               margin="dense"
               label="Description"
-              type="text"
               fullWidth
               variant="outlined"
               value={description}
@@ -253,17 +258,17 @@ const CandidateCard = ({ bidder }) => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
+      </Box> */}
 
       {/* Modal 1: Assign */}
       <Modal open={openAssignModal} onClose={handleAssignClose}>
-        <Box
+        {/* <Box
           sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: { xs: "80%", sm: 400 },
             bgcolor: "background.paper",
             borderRadius: 2,
             boxShadow: 24,
@@ -272,7 +277,7 @@ const CandidateCard = ({ bidder }) => {
           }}
         >
           <Typography variant="h6" sx={{ mb: 2, color: "#2196f3" }}>
-            Do You Confirm Assignment To:
+             Amount: ₹{bidder?.bidDetails?.bidOfAmount}
           </Typography>
           <TextField
             fullWidth
@@ -289,9 +294,96 @@ const CandidateCard = ({ bidder }) => {
           >
             OK
           </Button>
+        </Box> */}
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            bgcolor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1300,
+          }}
+        >
+          <Box
+            sx={{
+              width: 330,
+              bgcolor: "#fff",
+              borderRadius: "25px",
+              p: 3,
+              textAlign: "center",
+              position: "relative",
+            }}
+          >
+            {/* Close Icon */}
+            <IconButton
+              onClick={() => setOpenAssignModal(false)}
+              sx={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+
+            {/* Amount */}
+            <Typography
+              sx={{
+                fontSize: 16,
+                fontWeight: "bold",
+                mb: 2,
+              }}
+            >
+              Amount: ₹{bidder?.bidDetails?.bidOfAmount}
+            </Typography>
+
+            {/* Transfer Row */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 3,
+              }}
+            >
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                {/* From: {task?.user?.userName} */}
+                From: {user?.userName}
+              </Typography>
+
+              <ArrowForwardIcon sx={{ mx: 1 }} />
+
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                To: Super Admin
+              </Typography>
+            </Box>
+
+            {/* Transfer Button */}
+            <Button
+              onClick={handleTransferPayment}
+              sx={{
+                bgcolor: "#1DA1F2",
+                color: "#fff",
+                px: 4,
+                py: 1.2,
+                borderRadius: "25px",
+                fontWeight: "bold",
+                fontSize: 16,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: "#1784c7",
+                },
+              }}
+            >
+              Transfer Payment
+            </Button>
+          </Box>
         </Box>
       </Modal>
 
+      {/* Modal 2: Transfer */}
       <Modal open={openTransferModal} onClose={handleTransferClose}>
         <Box
           sx={{
@@ -299,7 +391,7 @@ const CandidateCard = ({ bidder }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 500,
+            width: { xs: "80%", sm: 500 },
             bgcolor: "background.paper",
             borderRadius: 4,
             boxShadow: 24,
@@ -308,15 +400,18 @@ const CandidateCard = ({ bidder }) => {
         >
           <Box
             sx={{
-              width: "90%",
+              // width: "100%",
               backgroundColor: "#d3d3d3",
               borderRadius: 1,
-              p: 2,
+              p: 3,
               textAlign: "center",
               mb: 3,
+              marginLeft: "-15px",
+              marginRight: "-15px",
+              display: "flex",
             }}
           >
-            <b>Bider Amount :</b>
+            <b>Bidder Amount :</b>
             <Typography>{bidder?.bidDetails.bidOfAmount}</Typography>
           </Box>
 
@@ -327,33 +422,39 @@ const CandidateCard = ({ bidder }) => {
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
               alignItems: "center",
+              gap: 2,
               mb: 4,
             }}
           >
             <Box
               sx={{
-                width: "40%",
+                width: "100%",
                 backgroundColor: "#d3d3d3",
                 borderRadius: 1,
-                p: 2,
+                p: 3,
                 textAlign: "left",
+                display: "flex",
               }}
             >
               <b>From :</b>
               <Typography>{bidder?.userName}</Typography>
             </Box>
 
-            <Typography sx={{ fontSize: 30 }}>→</Typography>
+            <Typography sx={{ fontSize: 30, alignSelf: "center" }}>
+              →
+            </Typography>
 
             <Box
               sx={{
-                width: "40%",
+                width: "100%",
                 backgroundColor: "#d3d3d3",
                 borderRadius: 1,
-                p: 2,
+                p: 3,
                 textAlign: "left",
+                display: "flex",
               }}
             >
               <b>To :</b>
@@ -379,7 +480,7 @@ const CandidateCard = ({ bidder }) => {
         </Box>
       </Modal>
 
-      {/* Modal 3: Success Confirmation */}
+      {/* Modal 3: Success */}
       <Modal open={openSuccessModal} onClose={handleSuccessClose}>
         <Box
           sx={{
@@ -387,7 +488,7 @@ const CandidateCard = ({ bidder }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: { xs: "80%", sm: 400 },
             bgcolor: "background.paper",
             borderRadius: 4,
             boxShadow: 24,
@@ -403,7 +504,8 @@ const CandidateCard = ({ bidder }) => {
             variant="contained"
             color="success"
             sx={{ mt: 2, borderRadius: 5 }}
-            onClick={handleSuccessClose}
+            // onClick={handleSuccessClose}
+            onClick={handleRedirection}
           >
             Close
           </Button>

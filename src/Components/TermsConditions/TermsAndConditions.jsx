@@ -33,18 +33,42 @@ const TermsConditions = () => {
   }, []);
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
-        Terms and Conditions
-      </Typography>
+  <Box
+    sx={{
+      px: { xs: 2, sm: 3, md: 6 },
+      py: { xs: 3, sm: 4, md: 6 },
+      maxWidth: "1000px",
+      mx: "auto",
+    }}
+  >
+    <Typography
+      variant="h4"
+      align="center"
+      fontWeight="bold"
+      gutterBottom
+      fontSize={{ xs: "1.8rem", sm: "2rem", md: "2.5rem" }}
+    >
+      Terms and Conditions
+    </Typography>
 
-      <Divider sx={{ mb: 4, borderColor: "grey.300" }} />
+    <Divider
+      sx={{
+        mb: { xs: 3, sm: 4 },
+        borderColor: "grey.300",
+      }}
+    />
 
-      <Typography variant="body1" paragraph>
-        {paragraph}
-      </Typography>
-    </Box>
-  );
+    <Typography
+      variant="body1"
+      paragraph
+      fontSize={{ xs: "0.95rem", sm: "1rem", md: "1.1rem" }}
+      lineHeight={1.7}
+    >
+      {paragraph}
+    </Typography>
+  </Box>
+);
+
 };
 
 export default TermsConditions;

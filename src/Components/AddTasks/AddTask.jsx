@@ -9,11 +9,18 @@ import {
   Grid,
   InputLabel,
   FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import axios from "axios";
 import Footer from "../../Components/Footer/Footer";
+import { useNavigate } from "react-router-dom";
+import ApiService from "../../services/ApiServices";
 
 const TaskManager = () => {
+  const navigate = useNavigate();
+
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [from, setFrom] = useState("");
@@ -29,7 +36,11 @@ const TaskManager = () => {
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [categoryName, setCategoryName] = useState("");
-   const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  const [user, setUser] = useState(null);
+  const [showVerifyKYC, setShowVerifyKYC] = useState(false);
+  const [showRejectedKYC, setShowRejectedKYC] = useState(false);
 
   const resetForm = () => {
     setCategory("");
@@ -90,8 +101,7 @@ const TaskManager = () => {
     setFiles([...e.target.files]);
   };
 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchAllUsers = async () => {
       const token = localStorage.getItem("token");
 
@@ -100,126 +110,187 @@ useEffect(() => {
         return;
       }
 
+      // const fetchData = async () => {
+      //   try {
+      //     const response = await ApiService.get('systemuser/get-user', {
+      //       userId,
+      //     });
+      //     console.log(response, 'userrrrraaaaa');
+      //     setUser(response.data);
+      //   } catch (error) {
+      //     console.log('Error fetching profile:', error);
+      //   }
+
       try {
-        const response = await axios.get("http://localhost:3001/user/all-user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:3001/user/all-user",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (response.data.success) {
           setUsers(response.data.data); // assuming the users are in `data`
-          console.log("==========>",users)
+          console.log("==========>", users);
         } else {
           console.error("Failed to fetch users");
         }
       } catch (error) {
-        console.error("Error fetching users:", error.response?.data || error.message);
+        console.error(
+          "Error fetching users:",
+          error.response?.data || error.message
+        );
       }
     };
 
     fetchAllUsers();
   }, []);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      const storedUser = JSON.parse(localStorage.getItem("user"));
 
+      if (!storedUser?.userId) return;
 
-
-
-
-
-
-
-
-
-
-
-
-const handleSubmit = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const userData = JSON.parse(localStorage.getItem("user"));
-
-    if (!token || !userData?.userId) {
-      alert("Authorization token or user data missing!");
-      return;
-    }
-
-    // Find the current logged-in user's full record from fetched users
-    const currentUser = users.find((user) => user.userId === userData.userId);
-
-    if (!currentUser || currentUser.status !== "Approved") {
-      alert("KYC Pending: Not permitted to add task");
-      return;
-    }
-
-    const selectedCategory = categoryList.find(
-      (cat) => cat.categoryId === category
-    );
-    const selectedSubCategory = subCategoryList.find(
-      (sub) => sub.SubCategoryId === subCategory
-    );
-
-    const categoryName = selectedCategory?.categoryName || "";
-    const subCategoryName = selectedSubCategory?.SubCategoryName || "";
-
-    const formData = new FormData();
-    formData.append("task", categoryName);
-    formData.append("Categories", categoryName);
-    formData.append("SubCategory", subCategoryName);
-    // formData.append("targetedPostIn", postedIn);
-    formData.append("endData", endDate);
-    formData.append("amount", amount);
-    formData.append("phoneNumber", phoneNumber);
-    formData.append("description", description);
-    formData.append("from", from);
-    formData.append("to", to);
-    formData.append("taskUserId", userData.userId);
-    formData.append("userId", userData.userId);
-    formData.append("status", "pending");
-
-    files.forEach((file) => {
-      formData.append("document", file);
-    });
-
-    const response = await axios.post(
-      "http://localhost:3001/task/create",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      try {
+        const res = await ApiService.get(
+          "/user/get-user",
+          // {
+          //   // params: { userId: storedUser.userId },
+          //   headers: { Authorization: `Bearer ${token}` },
+          // }
+        );
+        console.log("Fetched User:", res.data);
+        setUser(res.data);
+      } catch (err) {
+        console.error("User fetch error:", err);
       }
-    );
+    };
+    fetchUser();
+  }, []);
 
-    if (response.data.success) {
-      alert(response.data.message);
-      resetForm();
+  const handleSubmit = async () => {
+    // KYC CHECK (RN MATCH)
+    if (user.status === "Pending") {
+      setShowVerifyKYC(true);
+      return;
     }
-  } catch (error) {
-    console.error("Error submitting task:", error);
-    alert("An error occurred while creating the task");
-  }
-};
+    if (user.status === "Rejected") {
+      setShowRejectedKYC(true);
+      return;
+    }
 
+    if (!category || !subCategory) {
+      alert("Please select category and sub category");
+      return;
+    }
+
+    if (categoryName.toLowerCase() === "transport" && (!from || !to)) {
+      alert("Please fill From & To");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const userData = JSON.parse(localStorage.getItem("user"));
+
+      if (!token || !userData?.userId) {
+        alert("Authorization token or user data missing!");
+        return;
+      }
+
+      // Find the current logged-in user's full record from fetched users
+      const currentUser = users.find((user) => user.userId === userData.userId);
+
+      if (!currentUser || currentUser.status !== "Approved") {
+        alert("KYC Pending: Not permitted to add task");
+        return;
+      }
+
+      const selectedCategory = categoryList.find(
+        (cat) => cat.categoryId === category
+      );
+      const selectedSubCategory = subCategoryList.find(
+        (sub) => sub.SubCategoryId === subCategory
+      );
+
+      const categoryName = selectedCategory?.categoryName || "";
+      const subCategoryName = selectedSubCategory?.SubCategoryName || "";
+
+      const formData = new FormData();
+      formData.append("task", categoryName);
+      formData.append("Categories", categoryName);
+      formData.append("SubCategory", subCategoryName);
+      // formData.append("targetedPostIn", postedIn);
+      formData.append("endData", endDate);
+      formData.append("amount", amount);
+      formData.append("phoneNumber", phoneNumber);
+      formData.append("description", description);
+      formData.append("from", from);
+      formData.append("to", to);
+      formData.append("taskUserId", userData.userId);
+      formData.append("userId", userData.userId);
+      formData.append("status", "pending");
+
+      files.forEach((file) => {
+        formData.append("document", file);
+      });
+
+      const response = await axios.post(
+        "http://localhost:3001/task/create",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        alert(response.data.message);
+        resetForm();
+      }
+    } catch (error) {
+      console.error("Error submitting task:", error);
+      alert("An error occurred while creating the task");
+    }
+  };
 
   return (
     <>
-      <Box sx={{ p: 3, bgcolor: "#FFFFFF", minHeight: "100vh" }}>
-        <Typography variant="h4" align="center" fontWeight="bold" mb={3} mt={3}>
+      <Box
+        sx={{
+          px: { xs: 1, sm: 3 },
+          py: { xs: 3, sm: 4 },
+          bgcolor: "#FFFFFF",
+          minHeight: "100vh",
+        }}
+      >
+        <Typography
+          variant="h5"
+          align="center"
+          fontWeight="bold"
+          mb={3}
+          sx={{ fontSize: { xs: "1.6rem", sm: "2rem" } }}
+        >
           Add Tasks
         </Typography>
 
         <Box
           sx={{
-            maxWidth: "90%",
+            width: "100%",
+            maxWidth: { xs: "90%", sm: "90%", md: "70%" },
             mx: "auto",
-            p: 3,
+            p: { xs: 2, sm: 3 },
             bgcolor: "white",
             borderRadius: 2,
             boxShadow: 3,
           }}
         >
+          {/* Category */}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Category</InputLabel>
             <Select
@@ -251,6 +322,7 @@ const handleSubmit = async () => {
             </Select>
           </FormControl>
 
+          {/* Sub Category */}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Sub Category</InputLabel>
             <Select
@@ -266,12 +338,13 @@ const handleSubmit = async () => {
               ))}
             </Select>
           </FormControl>
+
+          {/* Transport Locations */}
           {categoryName.toLowerCase() === "transport" && (
             <>
               <TextField
                 fullWidth
                 label="From"
-                type="text"
                 variant="outlined"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
@@ -281,7 +354,6 @@ const handleSubmit = async () => {
               <TextField
                 fullWidth
                 label="To"
-                type="text"
                 variant="outlined"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
@@ -291,16 +363,7 @@ const handleSubmit = async () => {
             </>
           )}
 
-          {/* <TextField
-            fullWidth
-            label="Posted In"
-            type="date"
-            variant="outlined"
-            value={postedIn}
-            onChange={(e) => setPostedIn(e.target.value)}
-            sx={{ mb: 2 }}
-            InputLabelProps={{ shrink: true }}
-          /> */}
+          {/* End Date */}
           <TextField
             fullWidth
             label="End Date"
@@ -312,6 +375,7 @@ const handleSubmit = async () => {
             InputLabelProps={{ shrink: true }}
           />
 
+          {/* Amount */}
           <TextField
             fullWidth
             label="Amount"
@@ -322,16 +386,18 @@ const handleSubmit = async () => {
             sx={{ mb: 2 }}
           />
 
-          <TextField
-            fullWidth
-            label="Phone Number"
-            variant="outlined"
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            sx={{ mb: 2 }}
-          />
+          {/* Phone Number */}
+          {/* <TextField
+          fullWidth
+          label="Phone Number"
+          variant="outlined"
+          type="tel"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          sx={{ mb: 2 }}
+        /> */}
 
+          {/* Description */}
           <TextField
             fullWidth
             label="Description"
@@ -343,7 +409,7 @@ const handleSubmit = async () => {
             sx={{ mb: 2 }}
           />
 
-          {/* File Upload */}
+          {/* Upload Section */}
           <Typography variant="h6" fontWeight="bold" mt={3} mb={1}>
             Upload Files
           </Typography>
@@ -352,12 +418,12 @@ const handleSubmit = async () => {
             sx={{
               border: "2px dashed #ccc",
               borderRadius: 2,
-              p: 3,
+              p: 2,
               textAlign: "center",
               backgroundColor: "#f9f9f9",
               cursor: "pointer",
               mb: 2,
-              height: 150,
+              minHeight: { xs: 100, sm: 140 },
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
@@ -365,7 +431,10 @@ const handleSubmit = async () => {
             }}
             onClick={() => document.getElementById("fileUpload").click()}
           >
-            <Typography variant="body1" sx={{ fontSize: 18, mb: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{ fontSize: { xs: 14, sm: 16 }, mb: 1 }}
+            >
               Click to upload files or drag them here
             </Typography>
             <input
@@ -377,18 +446,24 @@ const handleSubmit = async () => {
             />
           </Box>
 
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="textSecondary" mb={2}>
             {files.length > 0
               ? `${files.length} file(s) selected`
               : "No files selected"}
           </Typography>
 
           {/* Submit Button */}
-          <Box mt={6} align="center">
+          <Box mt={4} textAlign="center">
             <Button
               variant="contained"
               color="primary"
-              sx={{ fontSize: "30px", fontWeight: "bold", px: 4, py: 1.5 }}
+              sx={{
+                fontSize: { xs: 16, sm: 20 },
+                fontWeight: "bold",
+                px: 4,
+                py: 1.5,
+                width: { xs: "100%", sm: "auto" },
+              }}
               onClick={handleSubmit}
             >
               Submit
@@ -396,9 +471,26 @@ const handleSubmit = async () => {
           </Box>
         </Box>
       </Box>
-      <div>
+
+      <Box mt={4}>
         <Footer />
-      </div>
+      </Box>
+
+      <Dialog open={showVerifyKYC} onClose={() => setShowVerifyKYC(false)}>
+        <DialogTitle>KYC Verifying</DialogTitle>
+        <DialogContent>
+          <Typography>You can’t add task until approved</Typography>
+          <Button onClick={() => navigate("/profile")}>For More</Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRejectedKYC} onClose={() => setShowRejectedKYC(false)}>
+        <DialogTitle>KYC Rejected</DialogTitle>
+        <DialogContent>
+          <Typography>KYC rejected. Please update.</Typography>
+          <Button onClick={() => navigate("/profile")}>For More</Button>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

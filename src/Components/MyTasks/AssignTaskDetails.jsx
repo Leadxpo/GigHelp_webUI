@@ -16,6 +16,8 @@ import {
   TextField,
   Modal,
   Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -24,38 +26,58 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import WorkIcon from "@mui/icons-material/Work";
 import StarIcon from "@mui/icons-material/Star";
 import ChartBoard from "../../Components/ChatBoard/chatBoardAssignTask";
+import { useLocation } from "react-router-dom";
 
 // Reusable Document Card
-const DocumentCard = ({ icon, label, fileUrl }) => (
-  <Paper
-    elevation={3}
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      gap: 2,
-      p: 2,
-      borderRadius: 3,
-      transition: "transform 0.3s, box-shadow 0.3s",
-      "&:hover": {
-        transform: "scale(1.03)",
-        boxShadow: 6,
-      },
-      cursor: "pointer",
-      minWidth: 250,
-    }}
-    onClick={() => window.open(fileUrl, "_blank")}
-  >
-    <IconButton color="primary" sx={{ fontSize: 40 }}>
-      {icon}
-    </IconButton>
-    <Typography variant="h6" fontWeight="bold">
-      {label}
-    </Typography>
-  </Paper>
-);
+const DocumentCard = ({ icon, label, fileUrl }) => {
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
+  return (
+    <Paper
+      elevation={3}
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: "center",
+        gap: 2,
+        p: { xs: 2, sm: 2 },
+        borderRadius: 3,
+        transition: "transform 0.3s, box-shadow 0.3s",
+        "&:hover": {
+          transform: "scale(1.03)",
+          boxShadow: 6,
+        },
+        cursor: "pointer",
+        minWidth: { xs: "100%", sm: 250 },
+        width: "100%",
+      }}
+      onClick={() => window.open(fileUrl, "_blank")}
+    >
+      <IconButton
+        color="primary"
+        sx={{
+          fontSize: { xs: 30, sm: 40 },
+        }}
+      >
+        {icon}
+      </IconButton>
+      <Typography
+        variant={isXs ? "body1" : "h6"}
+        fontWeight="bold"
+        sx={{ textAlign: { xs: "center", sm: "left" }, wordBreak: "break-word" }}
+      >
+        {label}
+      </Typography>
+    </Paper>
+  );
+};
 
 // Document Section
 const DocumentSection = ({ title, documents = [] }) => {
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
   const getIcon = (filename) => {
     const ext = filename.split(".").pop().toLowerCase();
     if (ext === "pdf") return <PictureAsPdfIcon fontSize="inherit" />;
@@ -67,11 +89,16 @@ const DocumentSection = ({ title, documents = [] }) => {
   const baseUrl = "http://localhost:3001/storege/userdp/";
 
   return (
-    <Box mb={5}>
-      <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
+    <Box mb={{ xs: 3, sm: 4, md: 5 }} px={{ xs: 1, sm: 2, md: 3 }}>
+      <Typography
+        variant={isXs ? "h6" : "h5"}
+        fontWeight="bold"
+        color="primary"
+        mb={2}
+      >
         {title}
       </Typography>
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {documents.length > 0 ? (
           documents.map((file, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -83,9 +110,15 @@ const DocumentSection = ({ title, documents = [] }) => {
             </Grid>
           ))
         ) : (
-          <Typography variant="body1" color="text.secondary" ml={2}>
-            No documents available.
-          </Typography>
+          <Grid item xs={12}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign={isXs ? "center" : "left"}
+            >
+              No documents available.
+            </Typography>
+          </Grid>
         )}
       </Grid>
     </Box>
@@ -191,7 +224,12 @@ const ExciteProfileCard = ({ bidder }) => {
 };
 
 // Main Component
-const BidderDisputeCard = ({ task }) => {
+const BidderDisputeCard = () => {
+  const location = useLocation();
+
+  const [task, setTask] = useState(location.state?.task || null);
+  console.log("aaaaaaaaaaaaaa>", task);
+
   const [bidders, setBidders] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
@@ -260,7 +298,7 @@ const BidderDisputeCard = ({ task }) => {
   }, [task?.taskId, token]);
 
   return (
-    <Box p={2} mt={10}>
+    <Box p={{ xs: 1, sm: 2, md: 4 }} mt={{ xs: 5, md: 10 }}>
       {/* Trigger Button */}
       <Box display="flex" justifyContent="flex-end" mt={2}>
         <Box
@@ -299,7 +337,7 @@ const BidderDisputeCard = ({ task }) => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: { xs: "90%", sm: 400 },
             bgcolor: "background.paper",
             boxShadow: 24,
             borderRadius: 2,
@@ -352,95 +390,110 @@ const BidderDisputeCard = ({ task }) => {
         </Box>
       </Modal>
 
-      <Grid item xs={12}>
-        <Box display="flex" gap={2}>
-          <Card sx={{ p: 2, width: "50%", border: "1px solid #ccc" }}>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography variant="h6" fontWeight="bold">
-                Category: {task.Categories}
-              </Typography>
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                fontWeight="bold"
+      {/* <Grid item xs={12}> */}
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ p: 2, border: "1px solid #ccc", height: "100%" }}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
               >
-                {task.daysLeft}
-              </Typography>
-            </Box>
-
-            <Box display="flex" justifyContent="space-between" mt={1}>
-              {task.Categories === "Transport" ? (
-                <Box mt={1} display="flex" gap={2}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    fontWeight={600}
-                    fontSize={16}
-                  >
-                    From: {task.from || "N/A"}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    fontWeight={600}
-                    fontSize={16}
-                  >
-                    To: {task.to || "N/A"}
-                  </Typography>
-                </Box>
-              ) : (
+                <Typography variant="h6" fontWeight="bold">
+                  Category: {task.Categories}
+                </Typography>
                 <Typography
                   variant="body2"
-                  color="text.secondary"
-                  mt={1}
-                  fontWeight={600}
-                  fontSize={16}
+                  color="textSecondary"
+                  fontWeight="bold"
                 >
-                  Sub Category: {task.SubCategory || "N/A"}
+                  {task.daysLeft}
                 </Typography>
-              )}
+              </Box>
 
-              <Typography fontSize="1.1rem" fontWeight="bold">
-                Status : {task.status}
-              </Typography>
-            </Box>
-
-            <Box display="flex" justifyContent="space-between" mt={1}>
-              <Typography fontSize="1.1rem" fontWeight="bold">
-                Posted in: {new Date(task.createdAt).toLocaleDateString()}
-              </Typography>
-            </Box>
-
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.3rem",
-                  px: 3,
-                  borderRadius: 8,
-                }}
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                mt={1}
+                flexWrap="wrap"
+                gap={1}
               >
-                {task.amount}
-              </Button>
-            </Box>
-          </Card>
+                {task.Categories === "Transport" ? (
+                  <Box
+                    mt={1}
+                    display="flex"
+                    gap={2}
+                    flexDirection={{ xs: "column", sm: "row" }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      fontWeight={600}
+                      fontSize={16}
+                    >
+                      From: {task.from || "N/A"}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      fontWeight={600}
+                      fontSize={16}
+                    >
+                      To: {task.to || "N/A"}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    mt={1}
+                    fontWeight={600}
+                    fontSize={16}
+                  >
+                    Sub Category: {task.SubCategory || "N/A"}
+                  </Typography>
+                )}
 
-          <Card sx={{ p: 2, width: "50%", border: "1px solid #ccc" }}>
-            <Typography variant="h6" fontWeight="bold">
-              Description :
-            </Typography>
-            <Typography mt={1} fontSize="1.1rem">
-              {task.description}
-            </Typography>
-          </Card>
-        </Box>
-      </Grid>
+                <Typography fontSize="1.1rem" fontWeight="bold">
+                  Status : {task.status}
+                </Typography>
+              </Box>
+
+              <Box display="flex" justifyContent="space-between" mt={1}>
+                <Typography fontSize="1.1rem" fontWeight="bold">
+                  Posted in: {new Date(task.createdAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+
+              <Box display="flex" justifyContent="flex-end" mt={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.2rem",
+                    px: 3,
+                    borderRadius: 2,
+                  }}
+                >
+                  ₹{task.amount}
+                </Button>
+              </Box>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card sx={{ p: 2, border: "1px solid #ccc", height: "100%" }}>
+              <Typography variant="h6" fontWeight="bold">
+                Description:
+              </Typography>
+              <Typography mt={1} fontSize="1.1rem">
+                {task.description}
+              </Typography>
+            </Card>
+          </Grid>
+        </Grid>
+      {/* </Grid> */}
 
       <Box mt={15}>
         <DocumentSection
@@ -453,12 +506,12 @@ const BidderDisputeCard = ({ task }) => {
         />
       </Box>
 
-      <Box mt={10}>
+      <Box mt={1}>
         {/* Show first bidder for now */}
         <ExciteProfileCard bidder={bidders[0]} />
       </Box>
 
-      <Box mt={10}>
+      <Box mt={2}>
         <ChartBoard task={task} />
       </Box>
     </Box>
