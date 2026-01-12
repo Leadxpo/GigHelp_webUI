@@ -196,8 +196,8 @@ const ProfilePage = () => {
         const token = localStorage.getItem("token");
         if (!userId || !token) return;
 
-        const res = await axios.get(
-          `http://localhost:3001/task/task-summary-by-user?userId=${userId}`,
+        const res = await ApiService.get(
+          `/task/task-summary-by-user?userId=${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -225,8 +225,8 @@ const ProfilePage = () => {
         const token = localStorage.getItem("token");
         if (!userId || !token) return;
 
-        const res = await axios.get(
-          `http://localhost:3001/Bids/count/${userId}`,
+        const res = await ApiService.get(
+          `/Bids/count/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -274,8 +274,8 @@ const ProfilePage = () => {
         console.log(pair[0] + ": ", pair[1]);
       }
 
-      const res = await axios.put(
-        `http://localhost:3001/user/user-update/${userData.userId}`,
+      const res = await ApiService.put(
+        `/user/user-update/${userData.userId}`,
         formData,
         {
           headers: {

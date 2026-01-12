@@ -10,6 +10,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import axios from "axios";
+import ApiService from "../../services/ApiServices";
 // bidder chat
 const App = (props) => {
   const [messages, setMessages] = useState([]);
@@ -57,16 +58,11 @@ const App = (props) => {
   const fetchMessages = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:3001/chatbox/conversation/${props?.task?.bidDetails.bidUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const res = await ApiService.get(
+        `/chatbox/conversation/${props?.task?.bidDetails.bidUserId}`,
       );
       console.log("hsdgfjhgfjh", res.data);
-      setMessages(res.data.data);
+      setMessages(res.data);
     } catch (err) {
       console.error(
         "Error fetching messages:",
@@ -78,8 +74,8 @@ const App = (props) => {
   const sendMessage = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:3001/chatbox/send",
+      await ApiService.post(
+        "/chatbox/send",
         {
           senderId: senderId,
           receiverId: props?.task?.bidDetails.bidUserId,

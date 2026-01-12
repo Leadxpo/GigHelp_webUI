@@ -147,8 +147,8 @@ const CandidateCard = () => {
     formData.append("requestBy", bidder.bidDetails?.BidId || "");
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/request/create",
+      const response = await ApiService.post(
+        "/request/create",
         formData,
         {
           headers: {

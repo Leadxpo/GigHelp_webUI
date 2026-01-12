@@ -79,7 +79,7 @@ const CategoryCard = () => {
       newFiles.forEach((file) => formData.append("newDocs", file));
 
       const response = await ApiService.put(
-        `http://localhost:3001/task/update/${task.taskId}`,
+        `/task/update/${task.taskId}`,
         formData,
         {
           headers: {

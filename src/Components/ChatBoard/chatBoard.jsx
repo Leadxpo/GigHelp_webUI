@@ -12,6 +12,7 @@ import { useTheme } from "@mui/material/styles";
 import SendIcon from "@mui/icons-material/Send";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import axios from "axios";
+import ApiService from "../../services/ApiServices";
 
 const App = (props) => {
   const [messages, setMessages] = useState([]);
@@ -34,15 +35,15 @@ const App = (props) => {
   const fetchMessages = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:3001/chatbox/conversation/${props?.task?.taskUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const res = await ApiService.get(
+        `/chatbox/conversation/${props?.task?.taskUserId}`,
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        // }
       );
-      setMessages(res.data.data);
+      setMessages(res.data);
     } catch (err) {
       console.error(
         "Error fetching messages:",
@@ -57,17 +58,17 @@ const App = (props) => {
     } else {
       try {
         const token = localStorage.getItem("token");
-        await axios.post(
-          "http://localhost:3001/chatbox/send",
+        await ApiService.post(
+          "/chatbox/send",
           {
             senderId,
             receiverId: props?.task?.taskUserId,
             taskId: props?.task?.taskId,
             message: input,
           },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          // {
+          //   headers: { Authorization: `Bearer ${token}` },
+          // }
         );
 
         setInput("");

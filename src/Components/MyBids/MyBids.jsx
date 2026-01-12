@@ -14,6 +14,7 @@ import BidderView from "../../Components/MyBids/BiddrsView";
 import ApprivedBids from "../../Components/MyBids/ApprivalBids";
 import Footer from "../../Components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
+import ApiService from "../../services/ApiServices";
 
 function MyBids() {
   const navigate = useNavigate();
@@ -31,10 +32,10 @@ function MyBids() {
   useEffect(() => {
     const fetchBids = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/Bids/user/${userDetail.userId}`
+        const response = await ApiService.get(
+          `/Bids/user/${userDetail.userId}`
         );
-        setTasks(response.data?.data || []);
+        setTasks(response.data || []);
       } catch (error) {
         console.error("Error fetching bids:", error.response?.data || error.message);
       }
@@ -48,7 +49,7 @@ function MyBids() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:3001/Bids/delete/${BidId}`);
+      await ApiService.delete(`/Bids/delete/${BidId}`);
       setTasks((prev) => prev.filter((task) => task.BidId !== BidId));
     } catch (error) {
       console.error("Error deleting bid:", error.response?.data || error.message);

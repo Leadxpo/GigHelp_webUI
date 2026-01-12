@@ -25,6 +25,7 @@ import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
 import Close from "@mui/icons-material/Close"; // Alias Close -> CloseIcon
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ApiService from "../../services/ApiServices";
 
 const TaskDetails = (props) => {
   const [totalTasks, setTotalTasks] = useState(0);
@@ -72,8 +73,8 @@ const TaskDetails = (props) => {
     formData.append("requestBy", props.task?.BidId || "");
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/request/create",
+      const response = await ApiService.post(
+        "/request/create",
         formData,
         {
           headers: {
@@ -126,8 +127,8 @@ const TaskDetails = (props) => {
           return;
         }
 
-        const response = await axios.get(
-          `http://localhost:3001/task/get-task?taskId=${props.task.taskId}`,
+        const response = await ApiService.get(
+          `/task/get-task?taskId=${props.task.taskId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -169,8 +170,8 @@ const TaskDetails = (props) => {
         const token = localStorage.getItem("token");
         if (!userId || !token) return;
 
-        const res = await axios.get(
-          `http://localhost:3001/task/task-summary-by-user?userId=${userId}`,
+        const res = await ApiService.get(
+          `/task/task-summary-by-user?userId=${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -193,8 +194,8 @@ const TaskDetails = (props) => {
 
   const handleUpdateBid = async () => {
     try {
-      const response = await axios.put(
-        `http://localhost:3001/Bids/update/${props.task.BidId}`,
+      const response = await ApiService.put(
+        `/Bids/update/${props.task.BidId}`,
         {
           bidOfAmount: biddingAmount, // Only update fields needed
         }
@@ -226,8 +227,8 @@ const TaskDetails = (props) => {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await axios.put(
-        "http://localhost:3001/task/update-status",
+      const response = await ApiService.put(
+        "/task/update-status",
         {
           taskId: taskId, // this goes in the body
           status: status,

@@ -10,6 +10,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import axios from "axios";
+import ApiService from "../../services/ApiServices";
 // bidder chat
 const App = (props) => {
   const [messages, setMessages] = useState([]);
@@ -30,45 +31,38 @@ const App = (props) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("senderName");
     if (storedUser) setUser(Number(storedUser));
-    fetchMessages();
+    fetchMessages(loginUser?.userId);
   }, []);
 
-  const fetchTaskDetails = async () => {
-    const taskId = props?.task?.taskId;
+  // const fetchTaskDetails = async () => {
+  //   const taskId = props?.task?.taskId;
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const res = await ApiService.get(
+  //       `/task/get-task/${props?.task?.taskId}`,
+  //     );
+
+  //     console.log("Task Details:", res.data.data);
+  //   } catch (err) {
+  //     console.error("Error fetching task details:", err);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchTaskDetails();
+  // }, [props?.task?.taskId]);
+
+  const fetchMessages = async uid => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:3001/task/get-task${props?.task?.taskId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log("Task Details:", res.data.data);
-    } catch (err) {
-      console.error("Error fetching task details:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchTaskDetails();
-  }, [props?.task?.taskId]);
-
-  const fetchMessages = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:3001/chatbox/conversation/${props?.task.taskId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      // const res = await ApiService.get(
+      //   `/chatbox/conversation/${props?.task.taskId}`,
+      // );
+      const res = await ApiService.get(
+        `/chatbox/conversation/${props?.task?.userId}?userId=${uid}&taskId=${props?.task?.bidDetails?.taskId}`,
       );
       console.log("hsdgfjhgfjh", res.data);
-      setMessages(res.data.data);
+      setMessages(res.data);
     } catch (err) {
       console.error(
         "Error fetching messages:",
@@ -80,8 +74,8 @@ const App = (props) => {
   const sendMessage = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:3001/chatbox/send",
+      await ApiService.post(
+        "/chatbox/send",
         {
           senderId: senderId,
           receiverId: props?.task?.taskId,

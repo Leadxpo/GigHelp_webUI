@@ -17,6 +17,7 @@ import TaskBidder from "../../Components/MyTasks/TaskBiders";
 import Footer from "../../Components/Footer/Footer";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import ApiService from "../../services/ApiServices";
 
 function Mytask() {
   const [selectedTask, setSelectedTask] = useState(null);
@@ -39,19 +40,14 @@ function Mytask() {
 
         const userId = userData.userId;
 
-        const response = await axios.post(
-          "http://localhost:3001/task/get-task-by-user",
+        const response = await ApiService.post(
+          "/task/get-task-by-user",
           {
             userId: userId,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
         );
 
-        const tasksWithColors = response.data.data.map((task) => ({
+        const tasksWithColors = response.data.map((task) => ({
           ...task,
           color: getColorByStatus(task.status),
         }));
@@ -77,7 +73,7 @@ function Mytask() {
     const token = localStorage.getItem("token"); // Get token from localStorage
 
     try {
-      await axios.delete(`http://localhost:3001/task/delete/${taskId}`, {
+      await ApiService.delete(`/task/delete/${taskId}`, {
         headers: {
           Authorization: `Bearer ${token}`, // Add token in Authorization header
         },

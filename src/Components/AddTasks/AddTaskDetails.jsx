@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { AttachFile, Image, PictureAsPdf, Close } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
+import ApiService from "../../services/ApiServices";
 
 const TaskDetails = () => {
   const location = useLocation();
@@ -66,17 +67,12 @@ const TaskDetails = () => {
       }
 
       try {
-        const response = await axios.get(
-          "http://localhost:3001/user/all-user",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await ApiService.get(
+          "/user/all-user",
         );
 
-        if (response.data.success) {
-          setUsers(response.data.data); // assuming the users are in `data`
+        if (response.success) {
+          setUsers(response.data); // assuming the users are in `data`
           console.log("==========>", users);
         } else {
           console.error("Failed to fetch users");
@@ -134,6 +130,7 @@ const TaskDetails = () => {
   const handleAddBid = async () => {
     const token = localStorage.getItem("token");
     const userData = JSON.parse(localStorage.getItem("user"));
+    console.log("User Data:", userData);
 
     if (!token || !userData?.userId) {
       alert("Authorization token or user data missing!");
@@ -142,6 +139,8 @@ const TaskDetails = () => {
 
     // Find the current logged-in user's full record from fetched users
     const currentUser = users.find((user) => user.userId === userData.userId);
+    console.log("Users List:", users);
+    console.log("Current User:", currentUser);
 
     if (!currentUser || currentUser.status !== "Approved") {
       alert("KYC Pending: Not permitted to add Bids");
@@ -181,20 +180,17 @@ const TaskDetails = () => {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/Bids/create",
+      const response = await ApiService.post(
+        "/Bids/create",
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
       );
 
-      const bidId = response.data?.data?.BidId;
-      const getResponse = await axios.get(
-        `http://localhost:3001/Bids/get-by-bidid?bidId=${bidId}`
+      const bidId = response.data?.BidId;
+      const getResponse = await ApiService.get(
+        `/Bids/get-by-bidid?bidId=${bidId}`
       );
 
-      setBidData(getResponse.data?.data || getResponse.data);
+      setBidData(getResponse.data || getResponse.data);
       setDialogOpen(false);
       setModalOpen(true);
     } catch (error) {
@@ -210,8 +206,8 @@ const TaskDetails = () => {
         const token = localStorage.getItem("token");
         if (!userId || !token) return;
 
-        const res = await axios.get(
-          `http://localhost:3001/task/task-summary-by-user?userId=${userId}`,
+        const res = await ApiService.get(
+          `/task/task-summary-by-user?userId=${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

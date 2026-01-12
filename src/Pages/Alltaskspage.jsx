@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 
 import AddTaskDetails from "../Components/AddTasks/AddTaskDetails"; // Component
+import ApiService from "../services/ApiServices";
 
 function HomepageComponent() {
   const [selectedTask, setSelectedTask] = useState(null);
@@ -25,10 +26,10 @@ function HomepageComponent() {
           return;
         }
 
-        const response = await axios.get("http://localhost:3001/task/get-all", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await ApiService.get("/task/get-all", {
+          // headers: {
+          //   Authorization: `Bearer ${token}`,
+          // },
         });
 
         if (response.data.success) {

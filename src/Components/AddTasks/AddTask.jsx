@@ -64,13 +64,13 @@ const TaskManager = () => {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          "http://localhost:3001/categories/get-all",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const res = await ApiService.get(
+          "/categories/get-all"
+          // {
+          //   headers: { Authorization: `Bearer ${token}` },
+          // }
         );
-        setCategoryList(res.data.data);
+        setCategoryList(res.data);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -83,17 +83,48 @@ const TaskManager = () => {
       if (!category) return;
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:3001/subcategories/get-all-categoryId?categoryId=${category}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const res = await ApiService.get(
+          `/subcategories/get-all-categoryId?categoryId=${category}`,
+          // {
+          //   headers: { Authorization: `Bearer ${token}` },
+          // }
         );
-        setSubCategoryList(res.data.data);
+        setSubCategoryList(res.data);
+        console.log(res.data, "sub category");
+
       } catch (error) {
         console.error("Error fetching subcategories:", error);
       }
     };
+    
+    // const fetchSubCategories = async () => {
+    //   if (!category) return;
+    //   try {
+    //     const res = await ApiService.get(
+    //       `/subcategories/get-all-categoryId?categoryId=${category}`
+    //     );
+    //     const formatted = res.data.map((item) => ({
+    //       label: item.SubCategoryName,
+    //       value: item.SubCategoryId,
+    //     }));
+    //     setSubCategoryList(formatted);
+
+    //     console.log(formatted, "sub category");
+
+    //     const selected = categoryList.find((cat) => cat.value === category);
+    //     setCategoryName(selected?.label || "");
+
+    //     if (selected?.label?.toLowerCase() === "transport") {
+    //       setFrom("Default From Location");
+    //       setTo("Default To Location");
+    //     } else {
+    //       setFrom("");
+    //       setTo("");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching subcategories:", error);
+    //   }
+    // };
     fetchSubCategories();
   }, [category]);
 
@@ -122,17 +153,17 @@ const TaskManager = () => {
       //   }
 
       try {
-        const response = await axios.get(
-          "http://localhost:3001/user/all-user",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await ApiService.get(
+          "/user/all-user"
+          // {
+          //   headers: {
+          //     Authorization: `Bearer ${token}`,
+          //   },
+          // }
         );
 
-        if (response.data.success) {
-          setUsers(response.data.data); // assuming the users are in `data`
+        if (response.success) {
+          setUsers(response.data); // assuming the users are in `data`
           console.log("==========>", users);
         } else {
           console.error("Failed to fetch users");
@@ -157,7 +188,7 @@ const TaskManager = () => {
 
       try {
         const res = await ApiService.get(
-          "/user/get-user",
+          "/user/get-user"
           // {
           //   // params: { userId: storedUser.userId },
           //   headers: { Authorization: `Bearer ${token}` },
@@ -238,19 +269,21 @@ const TaskManager = () => {
         formData.append("document", file);
       });
 
-      const response = await axios.post(
-        "http://localhost:3001/task/create",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
+      const response = await ApiService.post(
+        "/task/create",
+        formData
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //     "Content-Type": "multipart/form-data",
+        //   },
+        // }
       );
 
-      if (response.data.success) {
-        alert(response.data.message);
+      console.log("Task Creation Response:", response);
+
+      if (response.success) {
+        alert(response.message);
         resetForm();
       }
     } catch (error) {
@@ -314,7 +347,7 @@ const TaskManager = () => {
               }}
               label="Category"
             >
-              {categoryList.map((cat) => (
+              {categoryList?.map((cat) => (
                 <MenuItem key={cat.categoryId} value={cat.categoryId}>
                   {cat.categoryName}
                 </MenuItem>

@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Footer from "../../Components/Footer/Footer";
+import ApiService from "../../services/ApiServices";
 
 const statusColor = {
   completed: "#4CAF50",
@@ -56,8 +57,8 @@ const TransactionsPage = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/transections/get-by-user/${userId}`
+        const res = await ApiService.get(
+          `/transections/get-by-user/${userId}`
         );
         setTransactions(res.data.data || []);
       } catch (error) {

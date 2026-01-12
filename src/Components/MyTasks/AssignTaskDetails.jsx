@@ -27,6 +27,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import StarIcon from "@mui/icons-material/Star";
 import ChartBoard from "../../Components/ChatBoard/chatBoardAssignTask";
 import { useLocation } from "react-router-dom";
+import ApiService from "../../services/ApiServices";
 
 // Reusable Document Card
 const DocumentCard = ({ icon, label, fileUrl }) => {
@@ -74,11 +75,71 @@ const DocumentCard = ({ icon, label, fileUrl }) => {
 };
 
 // Document Section
-const DocumentSection = ({ title, documents = [] }) => {
+// const DocumentSection = ({ title, documents = [] }) => {
+//   const theme = useTheme();
+//   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
+//   const getIcon = (filename) => {
+//     const ext = filename.split(".").pop().toLowerCase();
+//     if (ext === "pdf") return <PictureAsPdfIcon fontSize="inherit" />;
+//     if (["jpg", "jpeg", "png", "gif", "bmp"].includes(ext))
+//       return <ImageIcon fontSize="inherit" />;
+//     return <DescriptionIcon fontSize="inherit" />;
+//   };
+
+//   const baseUrl = "http://localhost:3001/storege/userdp/";
+
+//   return (
+//     <Box mb={{ xs: 3, sm: 4, md: 5 }} px={{ xs: 1, sm: 2, md: 3 }}>
+//       <Typography
+//         variant={isXs ? "h6" : "h5"}
+//         fontWeight="bold"
+//         color="primary"
+//         mb={2}
+//       >
+//         {title}
+//       </Typography>
+//       <Grid container spacing={2}>
+//         {documents?.length > 0 ? (
+//           documents.map((file, index) => (
+//             <Grid item xs={12} sm={6} md={4} key={index}>
+//               <DocumentCard
+//                 icon={getIcon(file)}
+//                 label={file}
+//                 fileUrl={`${baseUrl}${file}`}
+//               />
+//             </Grid>
+//           ))
+//         ) : (
+//           <Grid item xs={12}>
+//             <Typography
+//               variant="body2"
+//               color="text.secondary"
+//               textAlign={isXs ? "center" : "left"}
+//             >
+//               No documents available.
+//             </Typography>
+//           </Grid>
+//         )}
+//       </Grid>
+//     </Box>
+//   );
+// };
+// Document Section
+const DocumentSection = ({ title, documents }) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
+  // ✅ Normalize documents to ALWAYS be an array
+  const normalizedDocuments = Array.isArray(documents)
+    ? documents
+    : documents
+    ? [documents]
+    : [];
+
   const getIcon = (filename) => {
+    if (!filename) return <DescriptionIcon fontSize="inherit" />;
+
     const ext = filename.split(".").pop().toLowerCase();
     if (ext === "pdf") return <PictureAsPdfIcon fontSize="inherit" />;
     if (["jpg", "jpeg", "png", "gif", "bmp"].includes(ext))
@@ -98,9 +159,10 @@ const DocumentSection = ({ title, documents = [] }) => {
       >
         {title}
       </Typography>
+
       <Grid container spacing={2}>
-        {documents.length > 0 ? (
-          documents.map((file, index) => (
+        {normalizedDocuments.length > 0 ? (
+          normalizedDocuments.map((file, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <DocumentCard
                 icon={getIcon(file)}
@@ -248,8 +310,8 @@ const BidderDisputeCard = () => {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await axios.put(
-        "http://localhost:3001/task/update-status",
+      const response = await ApiService.put(
+        "/task/update-status",
         {
           taskId: taskId, // this goes in the body
           status: status,
@@ -273,8 +335,8 @@ const BidderDisputeCard = () => {
   useEffect(() => {
     const fetchBidders = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/Bids/users-by-task/${task.taskId}`,
+        const response = await ApiService.get(
+          `/Bids/users-by-task/${task.taskId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
